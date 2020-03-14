@@ -1,0 +1,45 @@
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.comment-list {
+    padding: 0;
+    margin: 0;
+}
+
+.comment-list li {
+    padding: 30px 0 0 0;
+    float: left;
+    width: 100%;
+    clear: both;
+    list-style: none;
+}
+
+.comment-form-wrap {
+    clear: both;
+}
+
+.pt-5 {
+    padding-top: 3rem!important;
+}
+
+.imageView {
+    height: 400px;
+}
+
+.headerUp {
+    padding: 120px 0!important;
+}
+
+.headerUpArticle {
+    padding: 70px 0!important;
+}

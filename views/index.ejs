@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Welcome to Seyi Blog. Not Easy Abeg</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+  <!-- Custom styles for this template -->
+  <link href="css/clean-blog.min.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
+  <link href="../css/all.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-light">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Seyi's Blog</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto" id="customLogin">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li class="nav-item" id="customLogin">
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <header class="masthead imageView" style="background-image: url('img/home-bg.jpg')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="site-heading headerUp">
+            <h1>Seyi</h1>
+            <span class="subheading">This wasn't Easy at all</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- new col under -->
+      <div class="col-md-9">
+        <div class="col-lg-8 col-md-10 mx-auto text-center">
+          <h2>All Posts</h2>
+          <hr>
+        </div>
+      <div class="col-lg-8 col-md-10 mx-auto" id="blog_display">
+        <!-- blog post run here -->
+        <% data.forEach(function(blog_post){ %>
+            <div class="post-preview" id="post">
+                <a href="/views?id=<%=blog_post.id%>">
+                  <h2 class="post-title">
+                    <%=blog_post.title%> 
+                  </h2>
+                  <h3 class="post-subtitle">
+                    <%=blog_post.blog_main.slice(0,50)%>...
+                  </h3>
+                </a>
+                <p class="post-meta">Posted by
+                  <a href="#"><%=blog_post.author%></a>
+                  on <%=blog_post.date.slice(0,24)%></p>
+                  <p class="text-right"> <i class="fas fa-folder-open"></i>  <a href="/tag_post?tag=<%=blog_post.tags%>"><%=blog_post.tags%></a></p>
+                  <hr>
+              </div>
+        <% }) %>
+        <!--  -->
+
+        <div class="clearfix pagination" id="pagination">
+          <!-- navigation Runs here -->
+        </div>
+      </div>
+      <div id="displaypNumber">
+          <!-- temp page Number show -->
+      </div>
+
+      <% if ("first" in paginationData){ %>
+        <a href="/?page=<%= paginationData.first._page %>"><<<</a>
+      <% } %>
+      <% if ("prev" in paginationData){ %>
+        <a href="/?page=<%= paginationData.prev._page %>"><<</a>
+      <% } %>
+      <% if ("next" in paginationData){ %>
+        <a href="/?page=<%= paginationData.next._page %>">>></a>
+      <% } %>
+      <% if ("last" in paginationData){ %>
+        <a href="/?page=<%= paginationData.last._page %>">>>></a>
+      <% } %>
+    </div>
+    <div class="col-md-3">
+      <!-- widget reside here -->
+      <div class="card mb-3" id="fullsideBar">
+          <div class="card-body">
+              <h5 class="card-title">Stay Updated</h5>
+              <p class="card-text">Don't want to miss updates? Please click the below button!</p>
+              <a href="#" class="btn btn-primary">Subscribe to my feed</a>
+          </div>
+      </div>
+
+      <!--Dynamic Titles-->
+      <div class="card mb-3">
+              <div class="card-header">
+                      Featured
+              </div>
+              <div class="card-body">
+                  <ul class="list-group list-group-flush" id="featured_titles">
+                      <!--Dynamic Blog Posts title-->
+                      <% data.forEach(function(blog_post){ %>
+                        <li class="list-group-item" id="titlePost"><a href="/views?id=<%=blog_post.id%>"><%=blog_post.title%></a></li>
+                    <% }) %>
+                  </ul>
+              </div>              
+      </div>
+      <!--Catgories-->
+      <div class="card mb-3">
+              <div class="card-header">
+                      Category
+              </div>
+              <div class="card-body">
+                  <ul class="list-inline" id="category_view">
+                      <!--Dynamic Catgories-->
+                      <% tags.forEach(function(tag){ %>
+                        <li class="list-group-item"><a href="/tag_post?tag=<%=tag.title%>"><%=tag.title%></a></li>
+                      <% }) %>
+                  </ul>
+              </div>
+      </div>
+      <!-- widget end here -->
+    </div>
+      <!-- new div above -->
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <ul class="list-inline text-center">
+            <li class="list-inline-item">
+              <a href="#">
+                <span class="fa-stack fa-lg">
+                  <i class="fas fa-circle fa-stack-2x"></i>
+                  <i class="fab fa-twitter fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#">
+                <span class="fa-stack fa-lg">
+                  <i class="fas fa-circle fa-stack-2x"></i>
+                  <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#">
+                <span class="fa-stack fa-lg">
+                  <i class="fas fa-circle fa-stack-2x"></i>
+                  <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </li>
+          </ul>
+          <p class="copyright text-muted">Copyright &copy; Your Website 2019</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="./js/jquery.tmpl.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom scripts for this template -->
+  <!-- <script src="js/clean-blog.min.js"></script> -->
+  <script src="./js/all.js"></script>
+  <!-- <script src="./js/jquery.md5.js"></script> -->
+  <script src="./admin/js/customizer.js"></script>
+
+
+</body>
+
+</html>
