@@ -75,7 +75,7 @@
         <!-- blog post run here -->
         <% data.forEach(function(blog_post){ %>
             <div class="post-preview" id="post">
-                <a href="/views?id=<%=blog_post.id%>">
+                <a href="/views/<%=blog_post.id%>">
                   <h2 class="post-title">
                     <%=blog_post.title%> 
                   </h2>
@@ -86,7 +86,7 @@
                 <p class="post-meta">Posted by
                   <a href="#"><%=blog_post.author%></a>
                   on <%=blog_post.date.slice(0,24)%></p>
-                  <p class="text-right"> <i class="fas fa-folder-open"></i>  <a href="/tag_post?tag=<%=blog_post.tags%>"><%=blog_post.tags%></a></p>
+                  <p class="text-right"> <i class="fas fa-folder-open"></i>  <a href="/tag_post/<%=blog_post.tags%>"><%=blog_post.tags%></a></p>
                   <hr>
               </div>
         <% }) %>
@@ -132,7 +132,7 @@
                   <ul class="list-group list-group-flush" id="featured_titles">
                       <!--Dynamic Blog Posts title-->
                       <% data.forEach(function(blog_post){ %>
-                        <li class="list-group-item" id="titlePost"><a href="/views?id=<%=blog_post.id%>"><%=blog_post.title%></a></li>
+                        <li class="list-group-item" id="titlePost"><a href="/views/<%=blog_post.id%>"><%=blog_post.title%></a></li>
                     <% }) %>
                   </ul>
               </div>              
@@ -146,7 +146,7 @@
                   <ul class="list-inline" id="category_view">
                       <!--Dynamic Catgories-->
                       <% tags.forEach(function(tag){ %>
-                        <li class="list-group-item"><a href="/tag_post?tag=<%=tag.title%>"><%=tag.title%></a></li>
+                        <li class="list-group-item"><a href="/tag_post/<%=tag.title%>"><%=tag.title%></a></li>
                       <% }) %>
                   </ul>
               </div>

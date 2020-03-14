@@ -7,7 +7,7 @@ const fetch = require('node-fetch')
 const app = express()
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
-app.use(express.static('public'))
+app.use(express.static(__dirname + '/public'))
 
 
 app.get('/some', async(req, res)=>{
@@ -87,7 +87,10 @@ app.get('/', async(req, res)=>{
 
 
 app.get('/views/:pageID', async(req, res)=>{
-    res.send(req.params)
+    resData = await getData(`http://localhost:3000/blog_posts/${req.params.pageID}`)
+    console.log(resData)
+    // res.send(req.params)
+    res.render('views', {article: resData})
 })
 
 
