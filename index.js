@@ -69,6 +69,18 @@ async function getUsers(url){
     return retVal
 }
 
+async function postData(url, data){
+    const response = await fetch(url, {
+        method : 'POST',
+        headers : {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    const resData = await response.json()
+    return resData
+}
+
 app.get('/', async(req, res)=>{
     let {page = 1, limit = 3} = req.query
 
@@ -87,13 +99,32 @@ app.get('/', async(req, res)=>{
 
 
 app.get('/views/:pageID', async(req, res)=>{
-    resData = await getData(`http://localhost:3000/blog_posts/${req.params.pageID}`)
-    console.log(resData)
+    // resData = await getData(`http://localhost:3000/blog_posts/${req.params.pageID}`)
+    const [post, comments] = await Promise.all([getData(`http://localhost:3000/blog_posts/${req.params.pageID}`), getData(`http://localhost:3000/comments/?blog_id=${req.params.pageID}`)]);
+
     // res.send(req.params)
-    res.render('views', {article: resData})
+    res.render('views', {article: post, comments: comments})
+})
+
+app.post('/views/:pageID', async(req, res)=>{
+    console.log(req.body.comment_name)
+    console.log(req.body.comment_email)
+    console.log(req.body.comment_body)
+    
+    commentData = {
+        "cName": req.body.comment_name,
+        "cEmail": req.body.comment_email,
+        "blog_id": req.params.pageID,
+        "date": new Date(),
+        "cBody": req.body.comment_body
+    }
+
+    await postData('http://localhost:3000/comments', commentData)
+    res.redirect(`/views/${req.params.pageID}`)
+
 })
 
 
 app.listen(5000, ()=>{
-    console.log('server is listening on port 3000')
+    console.log('server is listening on port 5000')
 });
