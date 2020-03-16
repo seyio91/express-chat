@@ -1,10 +1,8 @@
 // General Routes
 const express = require('express');
-const linkParser = require('parse-link-header');
-const fetch = require('node-fetch');
 const router = express.Router();
 const { validationRules, validate } = require('../helpers/validators')
-const { buildUrl, getData, User } = require('../helpers/jsquery')
+const { User } = require('../helpers/jsquery')
 
 
 router.get('/signup', async(req, res)=> {
@@ -13,29 +11,40 @@ router.get('/signup', async(req, res)=> {
 
 router.post('/signup', validationRules(), validate, async(req, res)=> {
     const {signupfName, signuplName, signupEmail, signupuName, passCode, passConfirm} = req.body
-    // // post validation
-
-    // // Check user email exists using getData helper
-    userUrl = buildUrl("http://localhost:3000/users/", { email: signupEmail})
-    result = await getData(userUrl)
-    if (result.length > 0){
-        errors = [ 'User Exists' ]
-        res.render('signup', { errors: errors})
+    if (res.locals.errors){
+        // if errors render and pass values back
+        console.log('error exists')
+        res.render('signup', {
+            errors: res.locals.errors,
+            signupfName,
+            signuplName,
+            signupuName,
+            signupEmail
+        })
         res.end()
     }
+
+    // Check user email exists using getData helper
+    const result = await User.findOneUser({email:signupEmail})
+    if (result.length > 0){
+        errors = [ 'User Exists' ]
+        res.render('signup', {
+             errors: errors,
+             signupfName,
+             signuplName,
+             signupuName
+            })
+        res.end()
+    }
+
+
 
     // Create User
     newUser = new User(signupfName, signuplName, signupuName, signupEmail, passCode)
     newUser.save()
-    // console.log(newUser)
     res.render('signup')
 })
 
-// router.get('/', async (req, res) => {
-//     answer = await searchData('http://localhost:3000/users/?email=sebastian@codingthesmartway.com')
-//     console.log(answer)
-//     res.render('signup')
-// })
 
 
 module.exports = router;

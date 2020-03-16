@@ -17,8 +17,7 @@ const validate = (req, res, next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         errs = errors.array().map(msg=> msg.msg)
-        res.render('signup',{ errors: errs })
-        return res.end()
+        res.locals.errors = errs
     }
     return next()
   }

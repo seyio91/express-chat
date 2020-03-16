@@ -44,11 +44,6 @@ const postData = async (url, data) => {
     return resData
 }
 
-// const searchData = async (url) => {
-//     data = await getData(url)
-//     return data.length
-// }
-
 // User Class
 class User {
     constructor(first_name, last_name, username, email, password){
@@ -62,6 +57,11 @@ class User {
     async save() {
         await postData("http://localhost:3000/users/", this)
         console.log(this)
+    }
+
+    static async findOneUser({ email: signupEmail}){
+       const userUrl = buildUrl("http://localhost:3000/users/", { email: signupEmail})
+       return await getData(userUrl)
     }
 }
 
