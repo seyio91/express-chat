@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>SignUp</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animate/animate.css">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="/vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/select2/select2.min.css">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="/vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/css/vendor_main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<div class="login100-form-title" style="background-image: url(/images/bg-01.jpg);">
+					<span class="login100-form-title-1">
+						Sign Up
+					</span>
+                </div>
+                <% if(typeof errors != 'undefined'){ %>
+                    <% errors.forEach(error=>{ %>
+                        <%= error %>
+                    <% }) %>
+                <% } %>
+				<form class="login100-form validate-form" name="signup" id="signupform" method="POST" action="/users/signup">
+					<div class="wrap-input100 validate-input m-b-26" data-validate="First-Name is required">
+						<span class="label-input100">First Name: </span>
+						<input class="input100" type="text" name="signupfName" placeholder="Enter FirstName" id="signupfName" value="<%= typeof signupfName != 'undefined' ? signupfName : '' %>">
+						<span class="focus-input100"></span>
+					</div>
+					<div class="wrap-input100 validate-input m-b-26" data-validate="Last Name is required">
+							<span class="label-input100">Last Name</span>
+							<input class="input100" type="text" name="signuplName" placeholder="Enter Last Name" id="signuplName" value="<%= typeof signuplName != 'undefined' ? signuplName : '' %>">
+							<span class="focus-input100"></span>
+					</div>
+					<div class="wrap-input100 validate-input m-b-26" data-validate="Email is required">
+						<span class="label-input100">Email</span>
+						<input class="input100" name="signupEmail" placeholder="Enter Email" id="signupEmail" type="email"  value="<%= typeof signupEmail != 'undefined' ? signupEmail : '' %>">
+						<span class="focus-input100"></span>
+					</div>
+					<div class="wrap-input100 validate-input m-b-26" data-validate="Username is required">
+						<label for="signupusername" class="label-input100">Username</label>
+						<input class="input100" type="text" name="signupuName" placeholder="Enter username" id="signupuName" value="<%= typeof signupuName != 'undefined' ? signupuName : '' %>">
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-18" data-validate = "Password is required">
+						<span class="label-input100">Password</span>
+						<input class="input100" type="password" name="passCode" placeholder="Enter password" id="passCode" minlength="6" value="">
+						<span class="focus-input100"></span>
+					</div>
+					<div class="wrap-input100 validate-input m-b-18" data-validate = "Password is required">
+						<span class="label-input100">Confirm Password</span>
+						<input class="input100" type="password" name="passConfirm" placeholder="Enter password" id="passConfirm" minlength="6" value="">
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="flex-sb-m w-full p-b-30">
+						<div class="txt1" id="signupError" style="color: red">
+							<!-- error text -->
+						</div>
+						<div>
+							<a href="index.html" class="txt1">SignIn</a>
+						</div>
+					</div>
+
+					<div class="flex-sb-m w-full p-b-30">
+						<div class="container-login100-form-btn">
+								
+							<button class="login100-form-btn" id="signUpUser" type="submit">
+									Sign-Up
+							</button>
+						</div>
+						<div>or</div>
+						<div style="width: 200px!important">
+							<a href="../index.html">Continue as Visitor</a>
+						</div>
+								
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+<!--===============================================================================================-->
+	<script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/vendor/bootstrap/js/popper.js"></script>
+	<script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="/vendor/daterangepicker/moment.min.js"></script>
+	<script src="/vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="/vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+
+
+</body>
+</html>
