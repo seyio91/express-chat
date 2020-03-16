@@ -10,32 +10,6 @@ app.set('view engine', 'ejs')
 app.use(express.static(__dirname + '/public'))
 
 
-app.get('/some', async(req, res)=>{
-
-    let {page = 1, limit = 3} = req.query
-    options = {
-        url: "http://localhost:3000/blog_posts",
-        method: "GET",
-        qs: {
-            _order: "desc",
-            _page: page,
-            _limit: limit
-        }
-    }
-    console.log(req.url)
-    console.log(req.baseUrl)
-    console.log(req.get('host'))
-    console.log(req.protocol)
-    request(options, (error, response, body)=>{
-        console.log(response.statusCode)
-        console.log(linkParser(response.headers.link))
-        paginationData = linkParser(response.headers.link);
-        var data = JSON.parse(body)
-        res.render('index', {data: data, paginationData: paginationData})
-    })
-})
-
-
 function buildUrl(url, parameters) {
     let qs = "";
     for (const key in parameters) {
@@ -82,9 +56,10 @@ async function postData(url, data){
 }
 
 app.get('/', async(req, res)=>{
-    let {page = 1, limit = 3} = req.query
+    let {page = 1, limit = 5} = req.query
 
     queryString = {
+        "_sort": "id",
         "_order": "desc",
         "_page": page,
         "_limit": limit
@@ -97,13 +72,19 @@ app.get('/', async(req, res)=>{
     res.render('index', {data: data, paginationData: paginationData, tags: tags})
 })
 
+app.get('/tag_post/:tag', async(req,res)=>{
+    console.log(req.params.tag)
+    const data = await getData(`http://localhost:3000/blog_posts?tags=${req.params.tag}`)
+    res.render('tags', { data: data, pageTitle:req.params.tag})
+})
+
 
 app.get('/views/:pageID', async(req, res)=>{
     // resData = await getData(`http://localhost:3000/blog_posts/${req.params.pageID}`)
     const [post, comments] = await Promise.all([getData(`http://localhost:3000/blog_posts/${req.params.pageID}`), getData(`http://localhost:3000/comments/?blog_id=${req.params.pageID}`)]);
 
     // res.send(req.params)
-    res.render('views', {article: post, comments: comments})
+    res.render('views', {article: post, comments: comments.reverse()})
 })
 
 app.post('/views/:pageID', async(req, res)=>{
