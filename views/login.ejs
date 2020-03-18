@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>SignUp</title>
+	<title>Login</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+	<link rel="icon" type="image/png" href="/images/icons/favicon.ico"/>
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
 <!--===============================================================================================-->
@@ -34,69 +34,56 @@
 			<div class="wrap-login100">
 				<div class="login100-form-title" style="background-image: url(/images/bg-01.jpg);">
 					<span class="login100-form-title-1">
-						Sign Up
+						Sign In
 					</span>
-                </div>
-                <% if(typeof errors != 'undefined'){ %>
-                    <% errors.forEach(error=>{ %>
-                        <%= error %>
-                    <% }) %>
-                <% } %>
-				<form class="login100-form validate-form" name="signup" id="signupform" method="POST" action="/users/signup">
-					<div class="wrap-input100 validate-input m-b-26" data-validate="First-Name is required">
-						<span class="label-input100">First Name: </span>
-						<input class="input100" type="text" name="signupfName" placeholder="Enter FirstName" id="signupfName" value="<%= typeof signupfName != 'undefined' ? signupfName : '' %>">
-						<span class="focus-input100"></span>
-					</div>
-					<div class="wrap-input100 validate-input m-b-26" data-validate="Last Name is required">
-							<span class="label-input100">Last Name</span>
-							<input class="input100" type="text" name="signuplName" placeholder="Enter Last Name" id="signuplName" value="<%= typeof signuplName != 'undefined' ? signuplName : '' %>">
-							<span class="focus-input100"></span>
-					</div>
-					<div class="wrap-input100 validate-input m-b-26" data-validate="Email is required">
-						<span class="label-input100">Email</span>
-						<input class="input100" name="signupEmail" placeholder="Enter Email" id="signupEmail" type="email"  value="<%= typeof signupEmail != 'undefined' ? signupEmail : '' %>">
-						<span class="focus-input100"></span>
-					</div>
+				</div>
+				<% if(success_msg != ''){ %>
+					<%= success_msg %>
+				<% } %>
+
+				<% if(session_error != ''){ %>
+					<%= session_error %>
+				<% } %>
+
+
+				<form class="login100-form validate-form" method="POST" action="">
 					<div class="wrap-input100 validate-input m-b-26" data-validate="Username is required">
-						<label for="signupusername" class="label-input100">Username</label>
-						<input class="input100" type="text" name="signupuName" placeholder="Enter username" id="signupuName" value="<%= typeof signupuName != 'undefined' ? signupuName : '' %>">
+						<span class="label-input100">Username</span>
+						<input class="input100" type="text" name="username" placeholder="Enter username" id="signinUser">
 						<span class="focus-input100"></span>
 					</div>
 
 					<div class="wrap-input100 validate-input m-b-18" data-validate = "Password is required">
 						<span class="label-input100">Password</span>
-						<input class="input100" type="password" name="passCode" placeholder="Enter password" id="passCode" minlength="6" value="">
-						<span class="focus-input100"></span>
-					</div>
-					<div class="wrap-input100 validate-input m-b-18" data-validate = "Password is required">
-						<span class="label-input100">Confirm Password</span>
-						<input class="input100" type="password" name="passConfirm" placeholder="Enter password" id="passConfirm" minlength="6" value="">
+						<input class="input100" type="password" name="password" placeholder="Enter password" id="signinPass">
 						<span class="focus-input100"></span>
 					</div>
 
 					<div class="flex-sb-m w-full p-b-30">
-						<div class="txt1" id="signupError" style="color: red">
+						<div class="txt1" id="signinError" style="color: red">
 							<!-- error text -->
 						</div>
+						<!-- <a href="#" ><span class="txt1" style="color: blue;">Continue as Visitor</span></a> -->
 						<div>
-							<a href="/users/login" class="txt1">SignIn</a>
+							<a href="/users/signup" class="txt1" >
+								SignUp
+							</a>
 						</div>
 					</div>
-
 					<div class="flex-sb-m w-full p-b-30">
-						<div class="container-login100-form-btn">
-								
-							<button class="login100-form-btn" id="signUpUser" type="submit">
-									Sign-Up
-							</button>
+					<div class="container-login100-form-btn">
+						
+						<button class="login100-form-btn" id="signinSubmit">
+							Login
+						</button>
 						</div>
 						<div>or</div>
 						<div style="width: 200px!important">
 							<a href="../index.html">Continue as Visitor</a>
 						</div>
-								
+						
 					</div>
+					
 				</form>
 			</div>
 		</div>
@@ -117,7 +104,9 @@
 <!--===============================================================================================-->
 	<script src="/vendor/countdowntime/countdowntime.js"></script>
 <!--===============================================================================================-->
-
+	<!-- <script src="/js/main.js"></script> -->
+	<!-- <script src="./js/signin.js"></script> -->
+	<!-- <script src="../js/jquery.md5.js"></script> -->
 
 </body>
 </html>

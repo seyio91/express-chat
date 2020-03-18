@@ -59,14 +59,11 @@ class User {
         console.log(this)
     }
 
-    static async findOneUser({ email: signupEmail}){
-       const userUrl = buildUrl("http://localhost:3000/users/", { email: signupEmail})
+    static async findOneUser(dict = { email: signupEmail}){
+       const userUrl = buildUrl("http://localhost:3000/users/", dict)
        return await getData(userUrl)
     }
 }
-
-
-// User Class End
 
 module.exports = {
     buildUrl,
