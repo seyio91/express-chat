@@ -61,7 +61,7 @@ router.get('/login', async(req, res) => {
 
 router.post('/login', async(req, res, next)=>{
     passport.authenticate('local', {
-        successRedirect: '/index',
+        successRedirect: '/',
         failureRedirect: 'login',
         failureFlash: true
     })(req, res, next)

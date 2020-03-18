@@ -45,6 +45,9 @@ passport.serializeUser(function(user, done) {
 // Null should be an error rather
 passport.deserializeUser(function(id, done) {
     console.log('deserialization process')
-    User.findOneUser({ id: id }).then(result => done(null, result[0]))
+    User.findOneUser({ id: id }).then(result => {
+        console.log(result[0]);
+        done(null, result[0]);
+    })
   });
 }

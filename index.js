@@ -14,6 +14,8 @@ require('./helpers/passport')(passport)
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 
+app.use(express.static(__dirname + '/public'))
+
 // session middleware
 app.use(session({
     secret: 'SOMEVERYSECRETPASSWORD',
@@ -36,12 +38,10 @@ app.use((req, res, next)=>{
     next()
 })
 
-app.use(express.static(__dirname + '/public'))
+
 
 app.use('/', require('./routes/users'))
 app.use('/users', require('./routes/index'))
-
-
 
 
 const PORT = process.env.PORT || 5000
