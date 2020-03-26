@@ -47,14 +47,23 @@ router.get('/', userAuth ,async(req, res)=>{
     const [posts, tags] = await Promise.all([getUsers(absUrl), getData('http://localhost:3000/tags')]);
     data = posts.data
     paginationData = paginationData = linkParser(posts.link);
-    res.render('index', {data, paginationData, tags})
+    console.log(req.user.username)
+    res.render('index', {
+        data, 
+        paginationData, 
+        tags,
+        username: req.user.username
+    })
 })
 
 //tag Views
 router.get('/tag_post/:tag', userAuth, async(req,res)=>{
     console.log(req.params.tag)
     const data = await getData(`http://localhost:3000/blog_posts?tags=${req.params.tag}`)
-    res.render('tags', { data, pageTitle:req.params.tag})
+    res.render('tags', { 
+        data, 
+        pageTitle:req.params.tag
+    })
 })
 
 // Article View Route

@@ -42,6 +42,17 @@
           </li>
           <li class="nav-item" id="customLogin">
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-user"></i>  <span><%= username %></span>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="admin/dashboard.html">Admin Page</a>
+              <div class="dropdown-divider"></div>
+              <a href="/logout" class="button" id="signOut" class="dropdown-item btn-link">SignOut</a>
+              <!-- <button type="button" onclick="signOut()" class="dropdown-item btn-link" id="signOut" >SignOut</button> -->
+            </div> 
+            </li>
         </ul>
       </div>
     </div>
