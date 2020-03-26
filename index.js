@@ -2,11 +2,24 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
 const session = require('express-session')
+var SQLiteStore = require('connect-sqlite3')(session);
 const passport = require('passport')
+const fetch = require('node-fetch');
+const methodOverride = require('method-override')
+const handleError = require('./helpers/error')
+
+// require('express-async-errors');
 
 const app = express()
 
-// Check if DB can connect and Quit if not
+// Check if DB can connect and Quit if not// replace with db connection
+fetch('http://localhost:3000/users')
+    .then(console.log('DB Connected'))
+    .catch(err=>{
+        console.log('App cannot connect to database');
+        process.exit(1);   
+        })
+
 
 // require passport helper module
 require('./helpers/passport')(passport)
@@ -16,19 +29,14 @@ app.use(bodyParser.urlencoded({extended: true}))
 
 app.use(express.static(__dirname + '/public'))
 
-// default error handling
-app.use((req, res, next) => {
-    res.status(404).send({
-    status: 404,
-    error: 'Not found'
-    })
-   })
+
 
 // session middleware
 app.use(session({
+    store: new SQLiteStore,
     secret: 'SOMEVERYSECRETPASSWORD',
-    resave: true,
-    saveUninitialized: true
+    resave: false,
+    saveUninitialized: false
   }));
 
 // passport middleware
@@ -51,6 +59,21 @@ app.use((req, res, next)=>{
 app.use('/', require('./routes/users'))
 app.use('/users', require('./routes/index'))
 
+// default error handling
+app.use((req, res, next) => {
+    res.status(404).send({
+    status: 404,
+    error: 'Not found'
+    })
+   })
+
+// app.use(methodOverride())
+
+app.use(function (err, req, res, next) {
+    console.error(err.stack);
+    handleError(err, res);
+    // res.status(500).send('Something went wrong!!');
+  });
 
 const PORT = process.env.PORT || 5000
 

@@ -4,10 +4,37 @@ const linkParser = require('parse-link-header');
 const router = express.Router();
 const { buildUrl, getData, getUsers, postData} = require('../helpers/jsquery')
 const { userAuth } = require('../helpers/auth')
+require('express-async-errors');
+
+
+router.get('/error', (req, res) => {
+    throw new Error(500, 'Internal server error');
+  })
 
 //Home Page
+
+router.get('/hello', async(req, res ) =>{ 
+    res.send('Hello  world');
+    return
+})
+router.get('/logout', userAuth , async(req, res)=> {
+    console.log('endpoint reached')
+    req.logout()
+    req.session.destroy(()=>{res.redirect('/')})
+    console.log(req.session)
+    // res.redirect('/')
+    return
+})
+
 router.get('/', userAuth ,async(req, res)=>{
     let {page = 1, limit = 5} = req.query
+    if (req.session.view){
+        req.session.view ++;
+    }
+    else{
+        req.session.view = 0;
+    }
+    console.log(req.session)
 
     queryString = {
         "_sort": "id",

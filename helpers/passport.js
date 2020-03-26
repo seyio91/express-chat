@@ -23,16 +23,24 @@ module.exports = function(passport){
                     return done(null, false, { message: 'Incorrect Password'})
                 }
             })
+        }).catch((err)=> {
+          console.log('some error occurred');
+          // return done(null, false, { message: 'Internal Server Error, Contact Administrator'})
+          return done(error, false)
+          // throw new Error(500, 'Internal Error')
         })
     }
   )
 );
-passport.serializeUser(function(user, done) {
+// passport.serializeUser(function(user, done) {
+//     console.log(`serializing is going on`)
+//     done(null, user.id);
+//   });
+
+  passport.serializeUser(function(user, done) {
     console.log(`serializing is going on`)
-    done(null, user.id);
+    done(null, user);
   });
-
-
 
 // passport.deserializeUser(function(id, done) {
 //     console.log('deserialization process')
@@ -43,11 +51,17 @@ passport.serializeUser(function(user, done) {
 // }
 
 // Null should be an error rather
-passport.deserializeUser(function(id, done) {
-    console.log('deserialization process')
-    User.findOneUser({ id: id }).then(result => {
-        console.log(result[0]);
-        done(null, result[0]);
-    })
-  });
+// passport.deserializeUser(function(id, done) {
+//     console.log('deserialization process')
+//     User.findOneUser({ id: id }).then(result => {
+//         console.log(result[0]);
+//         done(null, result[0]);
+//     })
+//   });
+// }
+
+passport.deserializeUser(function(user, done) {
+  console.log('deserialization process')
+  done(null, user)
+});
 }

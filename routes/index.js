@@ -5,6 +5,7 @@ const router = express.Router();
 const { validationRules, validate } = require('../helpers/validators')
 const { User } = require('../helpers/jsquery')
 const passport = require('passport')
+require('express-async-errors');
 
 
 router.get('/signup', async(req, res)=> {

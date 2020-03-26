@@ -26,6 +26,7 @@ const getData = async url => {
 const getUsers = async url => {
     response = await fetch(url)
     const data = await response.json();
+    console.log(response.status)
     return {
         data,
         link: response.headers.get('link')
