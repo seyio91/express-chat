@@ -125,6 +125,7 @@ io.on('connection', socket =>{
 
     const userID = socket.request.user.email
     console.log(`userID is : ${userID}`)
+    console.log(Object.keys(io.sockets.sockets))
     
 
     // Check if username exists in session
@@ -134,16 +135,25 @@ io.on('connection', socket =>{
     } else {
         // Add Socket to User
         activeUsers[userID] = [socket.id]
-        socket.broadcast.emit('onlineusers', Object.keys(activeUsers))
+        socket.broadcast.emit('onlineusers',  Object.keys(activeUsers))
 
     }
 
     // everyone connecting should see all active users. all sockets
     socket.on('new session', ()=>{
+        console.log(`user making request ${userID}`)
         socket.emit('onlineusers', Object.keys(activeUsers))
     })
 
     console.log(activeUsers)
+
+    socket.on('new Message', data => {
+        console.log(`i received the following from ${userID}`)
+        console.log(data)
+        
+        // Do something with the data
+        
+    })
 
     // disconnect
     socket.on('disconnect', ()=>{
@@ -153,7 +163,7 @@ io.on('connection', socket =>{
             // if greater than 1, remove the particular session
             activeUsers[userID] = activeUsers[userID].filter( id=> socket.id != id)
         } else {
-            //if last socket, remove users from active users
+            //if last socket, set to offline
             delete activeUsers[userID]
             io.emit('onlineusers', Object.keys(activeUsers))
         }
