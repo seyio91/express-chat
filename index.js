@@ -1,3 +1,4 @@
+const http = require('http')
 const express = require('express');
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
@@ -7,10 +8,17 @@ const passport = require('passport')
 const fetch = require('node-fetch');
 const methodOverride = require('method-override')
 const handleError = require('./helpers/error')
+const socketio = require('socket.io')
+// const socketio = require('./socket/socket')
+const passportSocketIo = require("passport.socketio");
+const cookieParser = require('cookie-parser')
 
 // require('express-async-errors');
 
 const app = express()
+server = http.createServer(app);
+// socketio.init(server)
+const io = socketio(server)
 
 // Check if DB can connect and Quit if not// replace with db connection
 fetch('http://localhost:3000/users')
@@ -29,19 +37,54 @@ app.use(bodyParser.urlencoded({extended: true}))
 
 app.use(express.static(__dirname + '/public'))
 
+sessionStore = new SQLiteStore()
+
+// session middleware test
+// const sessionMiddleWare = session({
+//     store: sessionStore,
+//     secret: 'SOMEVERYSECRETPASSWORD',
+//     resave: false,
+//     saveUninitialized: false
+//   })
 
 
-// session middleware
-app.use(session({
-    store: new SQLiteStore,
+  sessionData = {
+    store: sessionStore,
     secret: 'SOMEVERYSECRETPASSWORD',
     resave: false,
     saveUninitialized: false
-  }));
+  }
+
+app.use(session(sessionData))
+// io.use((socket, next)=>{
+//     sessionMiddleWare(socket.request, socket.request.res, next)
+// })
+
+// app.use(sessionMiddleWare)
+
+sessionData.cookieParser = cookieParser;
+io.use(passportSocketIo.authorize(sessionData))
+
+// session middleware
+// app.use(session({
+//     store: sessionStore,
+//     secret: 'SOMEVERYSECRETPASSWORD',
+//     resave: false,
+//     saveUninitialized: false
+//   }));
+
 
 // passport middleware
 app.use(passport.initialize());
 app.use(passport.session())
+
+// 
+// io.use(passportSocketIo.authorize({
+//     key: 'connect.sid',
+//     secret: process.env.SECRET_KEY_BASE,
+//     store: sessionStore,
+//     passport: passport
+//   }));
 
 // connect flash middleware
 app.use(flash())
@@ -73,10 +116,56 @@ app.use(function (err, req, res, next) {
     console.error(err.stack);
     handleError(err, res);
     // res.status(500).send('Something went wrong!!');
-  });
+});
+
+activeUsers = {}
+
+io.on('connection', socket =>{
+    console.log(`New Connection ${socket.id}`)
+
+    const userID = socket.request.user.email
+    console.log(`userID is : ${userID}`)
+    
+
+    // Check if username exists in session
+    if (userID in activeUsers){
+        // add socket id to user
+        activeUsers[userID].push(socket.id)
+    } else {
+        // Add Socket to User
+        activeUsers[userID] = [socket.id]
+        socket.broadcast.emit('onlineusers', Object.keys(activeUsers))
+
+    }
+
+    // everyone connecting should see all active users. all sockets
+    socket.on('new session', ()=>{
+        socket.emit('onlineusers', Object.keys(activeUsers))
+    })
+
+    console.log(activeUsers)
+
+    // disconnect
+    socket.on('disconnect', ()=>{
+        console.log('a user has left')
+        // check number of connections left
+        if (activeUsers[userID].length > 1){
+            // if greater than 1, remove the particular session
+            activeUsers[userID] = activeUsers[userID].filter( id=> socket.id != id)
+        } else {
+            //if last socket, remove users from active users
+            delete activeUsers[userID]
+            io.emit('onlineusers', Object.keys(activeUsers))
+        }
+        
+        console.log(activeUsers)
+        
+    })
+
+})
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, ()=>{
+server.listen(PORT, ()=>{
     console.log(`server is listening on port ${PORT}`)
 });

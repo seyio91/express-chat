@@ -17,6 +17,7 @@ router.get('/hello', async(req, res ) =>{
     res.send('Hello  world');
     return
 })
+
 router.get('/logout', userAuth , async(req, res)=> {
     console.log('endpoint reached')
     req.logout()
@@ -24,6 +25,10 @@ router.get('/logout', userAuth , async(req, res)=> {
     console.log(req.session)
     // res.redirect('/')
     return
+})
+
+router.get('/chat', userAuth, async(req, res) => {
+    res.render('chat', {user: req.user.username})
 })
 
 router.get('/', userAuth ,async(req, res)=>{
