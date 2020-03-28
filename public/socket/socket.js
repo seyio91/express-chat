@@ -1,19 +1,16 @@
 console.log('Script reads')
 const usersElem = document.getElementById("users");
 const receiverElem = document.getElementById("recipient");
-const sendMessage = document.getElementById("sendMessage");
 const messageForm = document.getElementById('messageForm');
+const chat = document.getElementById('chat');
 const socket = io();
+
+// create classes for create message, create user
 
 currentChat = null;
 
-socket.emit('new session', ()=>{
-    
-})
-
-socket.on('onlineusers', users => {
-    console.log(users)
-    console.log(socket.id)
+socket.emit('new session', (users)=>{
+    console.log(`other users for my new session ${users}`)
     usersElem.innerHTML = "";
     users.forEach((user, index) => {
         if (index == 0){
@@ -27,6 +24,40 @@ socket.on('onlineusers', users => {
     })
     receiverElem.innerText = currentChat;
 })
+
+
+socket.on('receive Message', (data)=>{
+    console.log(data)
+    //Add Messages to DOM
+    const { message, sender } = data;
+    const div = document.createElement('div')
+    div.appendChild(document.createTextNode(`${sender}:    ${message}`))
+    div.setAttribute('class', 'card bg-light')
+    chat.appendChild(div)
+
+})
+
+
+socket.on('onlineuser', (msg) => {
+    console.log(msg)
+    socket.emit('test', 'getUsers', (users)=>{
+        console.log('should show other users')
+        console.log(users)
+        usersElem.innerHTML = "";
+        users.forEach((user, index) => {
+            if (index == 0){
+                currentChat = user;
+            }
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode(user));
+            li.setAttribute('class', 'list-group-item');
+            li.addEventListener('click',(chatEvent)(user))
+            usersElem.appendChild(li)
+        })
+        receiverElem.innerText = currentChat;
+    })
+})
+
 
 chatEvent = (chat) => {
     return ()=>{
@@ -47,8 +78,14 @@ messageForm.addEventListener('submit', (e)=>{
         return
     }
     console.log(msg)
+
+    //Add to DOM
+
+
     //emit message to user
-    socket.emit('new Message', {receipt: currentChat, msg: msg})
+    socket.emit('new Message', {recipient: currentChat, msg: msg})
+
+
 
     e.target.elements.message.value = '';
     e.target.elements.message.focus();

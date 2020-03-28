@@ -124,10 +124,11 @@ io.on('connection', socket =>{
     console.log(`New Connection ${socket.id}`)
 
     const userID = socket.request.user.email
-    console.log(`userID is : ${userID}`)
-    console.log(Object.keys(io.sockets.sockets))
+    // console.log(`userID is : ${userID}`)
+    // console.log(Object.keys(io.sockets.sockets))
     
-
+    otherUsers = Object.keys(activeUsers).filter(user=> user != userID);
+    
     // Check if username exists in session
     if (userID in activeUsers){
         // add socket id to user
@@ -135,24 +136,44 @@ io.on('connection', socket =>{
     } else {
         // Add Socket to User
         activeUsers[userID] = [socket.id]
-        socket.broadcast.emit('onlineusers',  Object.keys(activeUsers))
-
+        socket.broadcast.emit('onlineuser',  `${userID} is now online`)
+        console.log('new user action triggered')
     }
 
-    // everyone connecting should see all active users. all sockets
-    socket.on('new session', ()=>{
-        console.log(`user making request ${userID}`)
-        socket.emit('onlineusers', Object.keys(activeUsers))
+    // work around online => return confirm online from UI
+    // here returns to each socket a diff user
+    
+
+    socket.on('test', (data, callback)=>{
+        let userConnect = Object.keys(activeUsers).filter(user=> user != userID);
+        callback(userConnect)
+        console.log(`user making callback ${userID}`)
     })
 
-    console.log(activeUsers)
+    // everyone connecting should see all active users. all sockets
+    socket.on('new session', (callback)=>{
+        callback(otherUsers)
+        console.log(`${userID} has started a new session ${otherUsers}`)
+    })
+
+    // console.log(activeUsers)
 
     socket.on('new Message', data => {
-        console.log(`i received the following from ${userID}`)
-        console.log(data)
+        const { recipient, msg } = data
+        // Do something with the data\
+        console.log(`${userID} sent the Message ${msg} to user:  ${recipient}`)
+        if (!recipient in activeUsers){
+            return
+        }
+
+        //save message
+
         
-        // Do something with the data
-        
+        sendSockets = activeUsers[recipient]
+        sendSockets.forEach(socketid => {
+            io.to(`${socketid}`).emit('receive Message', { message: msg, sender: userID });
+        })
+
     })
 
     // disconnect
@@ -165,14 +186,17 @@ io.on('connection', socket =>{
         } else {
             //if last socket, set to offline
             delete activeUsers[userID]
-            io.emit('onlineusers', Object.keys(activeUsers))
+            console.log('user is deleted')
+            console.log(activeUsers)
+            io.emit('onlineuser', 'user has disconnected')
         }
         
-        console.log(activeUsers)
+        // console.log(activeUsers)
         
     })
 
 })
+
 
 const PORT = process.env.PORT || 5000
 
