@@ -3,6 +3,8 @@ const session = require('express-session')
 var SQLiteStore = require('connect-sqlite3')(session);
 const cookieParser = require('cookie-parser')
 const passportSocketIo = require("passport.socketio");
+const { postData, updateData } = require('../helpers/jsquery')
+const uuid = require('uuid')
 
 const sessionStore = new SQLiteStore()
 
@@ -23,6 +25,7 @@ socketconn.init = (server)=>{
 
     activeUsers = {}
     messageArray = []
+    messageid = 1009
 
     io.on('connection', socket =>{
     // io.on('changeafter', socket =>{
@@ -38,65 +41,69 @@ socketconn.init = (server)=>{
 
             // Create New User Session
             activeUsers = addUserSession(userID, socket.id, activeUsers)
-            socket.broadcast.emit('onlineuser',  `${userID} is now online`)
+            // socket.broadcast.emit('onlineuser',  `${userID} is now online`)
+            socket.broadcast.emit('userStateChange', {user: userID, state: true})
+            // tell everyone my state has changed
         }
     
-        socket.on('test', (data, callback)=>{
+        // socket.on('test', (data, callback)=>{
 
-            callback(getOnlineUsers(userID, activeUsers))
-            // console.log(`user making callback ${userID}`)
-        })
+        //     callback(getOnlineUsers(userID, activeUsers))
+        // })
     
         // everyone connecting should see all active users. all sockets
         socket.on('new session', (callback)=>{
-            callback({userid: userID, connectedUsers: getOnlineUsers(userID, activeUsers)})
-            console.log(`${userID} has started a new session ${getOnlineUsers(userID, activeUsers)}`)
-            console.log(activeUsers)
-            // console.log(`test connections available: ${testconnections}`)
+            callback(userID)
         })
     
         // console.log(activeUsers)
     
-        socket.on('new Message', data => {
-            const { recipient, msg } = data
-            // Do something with the data\
-            console.log(`${userID} sent the Message ${msg} to user:  ${recipient}`)
-            if (!recipient in activeUsers){
-                return
-            }
-    
-            //save message
+        socket.on('new Message', (data, callback) => {
+            callback(true)
+            const { cid, recipient, msg } = data
+
+            newmessage = createMessage(data, userID)
+            conversation = createConversation(data, userID)
+
+            console.log('storing new message', newmessage)
+
+            // send to save messsage
+            // postData('http://localhost:3000/messages', newmessage)
+            //     .then(()=> {
+            //         console.log("success creating new message")
+            //         updateData('http://localhost:3000/conversations', cid , conversation)
+            //             .then(()=> console.log('Success Creating Conversation'))
+            //     })
     
     
             // sendSockets = activeUsers[recipient]
+
+            // console.log('receipient available: ', sendSockets)
             sendSockets = getUserSession(recipient, activeUsers)
+            if (!sendSockets) return
             sendSockets.forEach(socketid => {
                 io.to(`${socketid}`).emit('receive Message', { message: msg, sender: userID });
             })
     
         })
+
+
+        //get online users
+        socket.on('getonlineUsers', (callback)=> {
+            callback(getOnlineUsers(userID, activeUsers))
+        })
     
         // disconnect
         socket.on('disconnect', ()=>{
-            console.log('a user has left')
-            console.log(`acive users at this before deleting`)
-            console.log(activeUsers)
             if (activeUsers[userID]){
             // check number of connections left
                 if (activeUsers[userID].length > 1){
-                    console.log(`users session before remove confirm`)
-                    console.log(activeUsers)
-                    // if greater than 1, remove the particular session
-                    // activeUsers[userID] = activeUsers[userID].filter( id=> socket.id != id)
                     activeUsers = removeSession(userID, socket.id , activeUsers);
-                    console.log(`checking if user remove`)
-                    console.log(activeUsers)
                 } else {
                     //if last socket, set to offline
                     delete activeUsers[userID]
-                    console.log('user is deleted')
-                    console.log(activeUsers)
-                    io.emit('onlineuser', 'user has disconnected')
+                    // io.emit('userStateChange', {user: userID, state: false})
+                    socket.broadcast.emit('userStateChange', {user: userID, state: false})
                 }
             }
             
@@ -148,5 +155,29 @@ function userOffline(user, userList){
     return userList
 }
 
+function getTime(){
+    // current timestamp in milliseconds
+    let ts = Date.now();
+
+    let date_ob = new Date(ts);
+    let date = date_ob.getDate();
+    let month = date_ob.getMonth() + 1;
+    let year = date_ob.getFullYear();
+
+    // prints date & time in YYYY-MM-DD format
+    return year + "-" + month + "-" + date;
+}
+
+// Helper to create message
+function createMessage(data, userid){
+    const { cid, msg } = data
+    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp: getTime() }
+}
+
+// create conversation
+function createConversation(data, userid){
+    const { msg, recipient } = data;
+    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, author: userid } }
+}
 
 module.exports = { sessionData, socketconn }

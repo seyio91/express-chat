@@ -19,44 +19,40 @@ router.get('/hello', async(req, res ) =>{
 })
 
 router.get('/logout', userAuth , async(req, res)=> {
-    console.log('endpoint reached')
+    // console.log('endpoint reached')
     req.logout()
     req.session.destroy(()=>{res.redirect('/')})
-    console.log(req.session)
+    // console.log(req.session)
     // res.redirect('/')
     return
 })
 
 router.get('/chat', userAuth, async(req, res) => {
-    //get all users for now
-    // const users = await getData(`http://localhost:3000/users?email_ne=${req.user.email}`)
-    // const allUser = users.map(user => user.email)
     res.render('chat', { user: req.user.email })
 })
 
-router.get('/chatusers', async(req, res)=>{
-    const users = await getData(`http://localhost:3000/users?email_ne=${req.user.email}`)
-    const allUsers = users.map(user => user.email)
-    console.log('this was called', allUsers)
-    res.json(allUsers)
+router.get('/currentchat/:cid',userAuth, async(req, res)=>{
+    const convo = await getData(`http://localhost:3000/messages?cid=${req.params.cid}`)
+    res.json(convo)
 })
 
 // replace later
-router.get('/conversations', async(req, res)=>{
-    const conversations = await getData(`http://localhost:3000/participants?uid1=${req.user.email}`)
-    
+router.get('/conversations', userAuth, async(req, res)=>{
+    const sentconversations = await getData(`http://localhost:3000/conversations?uid1=${req.user.email}`)
+    const recievedconversations = await getData(`http://localhost:3000/conversations?uid2=${req.user.email}`)
+    conversations = [ ...recievedconversations,...sentconversations]
+
     res.json(conversations)
 })
 
 router.get('/', userAuth ,async(req, res)=>{
     let {page = 1, limit = 5} = req.query
-    if (req.session.view){
-        req.session.view ++;
-    }
-    else{
-        req.session.view = 0;
-    }
-    console.log(req.session)
+    // if (req.session.view){
+    //     req.session.view ++;
+    // }
+    // else{
+    //     req.session.view = 0;
+    // }
 
     queryString = {
         "_sort": "id",
@@ -69,7 +65,7 @@ router.get('/', userAuth ,async(req, res)=>{
     const [posts, tags] = await Promise.all([getUsers(absUrl), getData('http://localhost:3000/tags')]);
     data = posts.data
     paginationData = paginationData = linkParser(posts.link);
-    console.log(req.user.username)
+    // console.log(req.user.username)
     res.render('index', {
         data, 
         paginationData, 

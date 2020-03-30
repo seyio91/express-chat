@@ -45,6 +45,19 @@ const postData = async (url, data) => {
     return resData
 }
 
+const updateData = async (url, id ,data) => {
+    console.log(`performing put request to ${url}/${id}`)
+    const response = await fetch(`${url}/${id}`, {
+        method : 'PUT',
+        headers : {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    const resData = await response.json()
+    return resData
+}
+
 // User Class
 class User {
     constructor(first_name, last_name, username, email, password){
@@ -71,5 +84,6 @@ module.exports = {
     getData,
     getUsers,
     postData,
-    User
+    User,
+    updateData
   }
