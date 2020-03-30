@@ -25,34 +25,34 @@ socketconn.init = (server)=>{
     messageArray = []
 
     io.on('connection', socket =>{
+    // io.on('changeafter', socket =>{
         console.log(`New Connection ${socket.id}`)
     
         const userID = socket.request.user.email
 
+        if (isActiveUser(userID, activeUsers)){
+
+            activeUsers = updateUserSession(userID, socket.id, activeUsers)
+
+        } else {
+
+            // Create New User Session
+            activeUsers = addUserSession(userID, socket.id, activeUsers)
+            socket.broadcast.emit('onlineuser',  `${userID} is now online`)
+        }
     
         socket.on('test', (data, callback)=>{
-            let userConnect = Object.keys(activeUsers).filter(user=> user != userID);
-            callback(userConnect)
-            console.log(`user making callback ${userID}`)
+
+            callback(getOnlineUsers(userID, activeUsers))
+            // console.log(`user making callback ${userID}`)
         })
     
         // everyone connecting should see all active users. all sockets
         socket.on('new session', (callback)=>{
-            if (userID in activeUsers){
-                // add socket id to user
-                activeUsers[userID].push(socket.id)
-            } else {
-                // Add Socket to User
-                activeUsers[userID] = [socket.id]
-                socket.broadcast.emit('onlineuser',  `${userID} is now online`)
-                console.log('new user action triggered')
-            }
-    
-            otherUsers = Object.keys(activeUsers).filter(user=> user != userID);
-            console.log('new session to view active')
+            callback({userid: userID, connectedUsers: getOnlineUsers(userID, activeUsers)})
+            console.log(`${userID} has started a new session ${getOnlineUsers(userID, activeUsers)}`)
             console.log(activeUsers)
-            callback(otherUsers)
-            console.log(`${userID} has started a new session ${otherUsers}`)
+            // console.log(`test connections available: ${testconnections}`)
         })
     
         // console.log(activeUsers)
@@ -68,7 +68,8 @@ socketconn.init = (server)=>{
             //save message
     
     
-            sendSockets = activeUsers[recipient]
+            // sendSockets = activeUsers[recipient]
+            sendSockets = getUserSession(recipient, activeUsers)
             sendSockets.forEach(socketid => {
                 io.to(`${socketid}`).emit('receive Message', { message: msg, sender: userID });
             })
@@ -78,11 +79,18 @@ socketconn.init = (server)=>{
         // disconnect
         socket.on('disconnect', ()=>{
             console.log('a user has left')
+            console.log(`acive users at this before deleting`)
+            console.log(activeUsers)
             if (activeUsers[userID]){
             // check number of connections left
                 if (activeUsers[userID].length > 1){
+                    console.log(`users session before remove confirm`)
+                    console.log(activeUsers)
                     // if greater than 1, remove the particular session
-                    activeUsers[userID] = activeUsers[userID].filter( id=> socket.id != id)
+                    // activeUsers[userID] = activeUsers[userID].filter( id=> socket.id != id)
+                    activeUsers = removeSession(userID, socket.id , activeUsers);
+                    console.log(`checking if user remove`)
+                    console.log(activeUsers)
                 } else {
                     //if last socket, set to offline
                     delete activeUsers[userID]
@@ -92,12 +100,52 @@ socketconn.init = (server)=>{
                 }
             }
             
-            // console.log(activeUsers)
             
         })
-    
+        console.log(activeUsers)
     })
 
+}
+
+// userexists function
+function isActiveUser(user, userList){
+    return user in userList;
+}
+
+// add user to session
+function addUserSession(user, session ,userList){
+    userList[user] = [session];
+    return userList;
+}
+
+// add user session
+function updateUserSession(user, session ,userList){
+    userList[user].push(session);
+    return userList
+}
+
+
+
+//get other users
+function getOnlineUsers(user, userList){
+    return Object.keys(userList).filter(userCur=> userCur != user)
+}
+
+//get user session
+function getUserSession(user, userList){
+    return userList[user]
+}
+
+//remove user session. can use the get session also
+function removeSession(user, session ,userList){
+    userList[user] = userList[user].filter( id=> session != id);
+    return userList
+}
+
+//removeuser or offline
+function userOffline(user, userList){
+    delete userList[user];
+    return userList
 }
 
 

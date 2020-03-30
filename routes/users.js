@@ -28,7 +28,24 @@ router.get('/logout', userAuth , async(req, res)=> {
 })
 
 router.get('/chat', userAuth, async(req, res) => {
-    res.render('chat', {user: req.user.username})
+    //get all users for now
+    // const users = await getData(`http://localhost:3000/users?email_ne=${req.user.email}`)
+    // const allUser = users.map(user => user.email)
+    res.render('chat', { user: req.user.email })
+})
+
+router.get('/chatusers', async(req, res)=>{
+    const users = await getData(`http://localhost:3000/users?email_ne=${req.user.email}`)
+    const allUsers = users.map(user => user.email)
+    console.log('this was called', allUsers)
+    res.json(allUsers)
+})
+
+// replace later
+router.get('/conversations', async(req, res)=>{
+    const conversations = await getData(`http://localhost:3000/participants?uid1=${req.user.email}`)
+    
+    res.json(conversations)
 })
 
 router.get('/', userAuth ,async(req, res)=>{
