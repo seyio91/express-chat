@@ -60,10 +60,10 @@ socketconn.init = (server)=>{
     
         socket.on('new Message', (data, callback) => {
             callback(true)
-            const { cid, recipient, msg } = data
+            const { cid, msg, recipient } = data
 
             newmessage = createMessage(data, userID)
-            conversation = createConversation(data, userID)
+            conversation = updateConversation(data, userID)
 
             console.log('storing new message', newmessage)
 
@@ -171,11 +171,11 @@ function getTime(){
 // Helper to create message
 function createMessage(data, userid){
     const { cid, msg } = data
-    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp: getTime() }
+    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp: new Date() }
 }
 
 // create conversation
-function createConversation(data, userid){
+function updateConversation(data, userid){
     const { msg, recipient } = data;
     return { uid1: userid, uid2: recipient, lastMessage: { message: msg, author: userid } }
 }
