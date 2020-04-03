@@ -28,7 +28,8 @@ router.get('/logout', userAuth , async(req, res)=> {
 })
 
 router.get('/chat', userAuth, async(req, res) => {
-    res.render('chat', { user: req.user.email })
+    // res.render('chat', { user: req.user.email })
+    res.render('element')
 })
 
 router.get('/currentchat/:cid',userAuth, async(req, res)=>{

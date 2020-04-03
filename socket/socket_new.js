@@ -37,9 +37,36 @@ const setCurrentChat = (chat) => {
     fetch(`/currentchat/${id}`)
         .then(res => res.json())
             .then(data => {
+                outputhtml = ""
                 data.forEach(messages => {
-
                     const { message, sender, timestamp } = messages;
+                    if (sender == currentChat.participant){
+                        innerhtml = `
+                    <div class="media w-50 mb-3">
+                    <div class="media-body ml-3">
+                      <div class="bg-light rounded py-2 px-3 mb-2">
+                        <p class="text-small mb-0 text-muted">${message}</p>
+                      </div>
+                      <p class="small text-muted">${timestamp}</p>
+                    </div>
+                  </div>
+                        `
+                    } else {
+                        innerhtml = `
+                        <div class="media w-50 ml-auto mb-3">
+                        <div class="media-body">
+                          <div class="bg-primary rounded py-2 px-3 mb-2">
+                            <p class="text-small mb-0 text-white">${message}</p>
+                          </div>
+                          <p class="small text-muted">12:00 PM | Aug 13</p>
+                        </div>
+                      </div>
+                        `
+                    }
+                    outputhtml += innerhtml;
+
+
+                    // const { message, sender, timestamp } = messages;
                     // console.log('the sender: ', sender)
                     // console.log('the Message: ', message)
                     const div = document.createElement('div')
@@ -56,27 +83,42 @@ const setCurrentChat = (chat) => {
 // }
 
 socket.emit('new session', (data)=>{
-    mainUser = data
+    const mainUser = data
     // make an ajax call to get list of all your users
     fetch(`/conversations`)
         .then(res => res.json())
             .then(connectedUsers => {
                 // console.log(connectedUsers);
                 usersElem.innerHTML = "";
-                console.log('code got here')
                 if (!connectedUsers.length){
                     return
                 }
                 connectedUsers.forEach((user, index) => {
                     let { uid1, uid2, id, lastMessage } = user;
-                    const li = document.createElement('li');
-                    participant = mainUser == uid1 ? uid2 : uid1
-                    li.appendChild(document.createTextNode(participant));
-                    li.setAttribute('class', 'list-group-item text-danger');
-                    li.setAttribute('id', `${participant}`);
+                    let participant = mainUser == uid1 ? uid2 : uid1
+
+                    let contact = `
+                    <a href="#" class="list-group-item list-group-item-action list-group-item-light rounded-0" id="${participant}">
+                    <div class="media"><img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" class="rounded-circle" width="50">
+                      <div class="media-body ml-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                          <h6 class="mb-0">${participant}</h6><small class="small font-weight-bold">21 Aug</small>
+                        </div>
+                        <p class="font-italic text-muted mb-0 text-small">${lastMessage}</p>
+                      </div>
+                    </div>
+                  </a>
+                    `
+
+                    // const li = document.createElement('li');
+                    // li.appendChild(document.createTextNode(participant));
+                    // li.setAttribute('class', 'list-group-item text-danger');
+                    // li.setAttribute('id', `${participant}`);
                     let chat = {participant, id}
-                    li.addEventListener('click',(chatEvent)(chat))
-                    usersElem.appendChild(li)
+                    // li.addEventListener('click',(chatEvent)(chat))
+                    contact.addEventListener('click',(chatEvent)(chat))
+                    // usersElem.appendChild(li)
+                    usersElem.appendChild(contact)
                     if (index == 0){
                         setCurrentChat(chat)
                     }
@@ -87,7 +129,9 @@ socket.emit('new session', (data)=>{
                     data.forEach(onlineuser => {
                         const userElem = document.getElementById(onlineuser)
                         if (userElem) {
-                            userElem.setAttribute('class', 'list-group-item text-success');
+                            // userElem.setAttribute('class', 'list-group-item text-success');
+                            currClass = userElem.getAttribute('class');
+                            userElem.setAttribute('class', `${currClass} text-success`)
                         }
                     })
                 })
@@ -100,18 +144,26 @@ socket.emit('new session', (data)=>{
 socket.on('receive Message', (data)=>{
     // console.log(data)
     //Add Messages to DOM
-    const { message, sender } = data;
+    const { message, sender, timestamp } = data;
 
     
 
     if (currentChat.participant == sender){
-        const div = document.createElement('div')
-        div.appendChild(document.createTextNode(`${sender}:    ${message}`))
-        div.setAttribute('class', 'card bg-dark text-light')
-        chatBox.appendChild(div)
-
-        // scroll down on receive message
-        chatBox.scrollTop = chatBox.scrollHeight;
+        newmessage = `
+            <div class="media w-50 mb-3">
+                <div class="media-body ml-3">
+                    <div class="bg-light rounded py-2 px-3 mb-2">
+                        <p class="text-small mb-0 text-muted">${message}</p>
+                    </div>
+                    <p class="small text-muted">${timestamp}</p>
+                </div>
+            </div> 
+        `
+        // const div = document.createElement('div')
+        // div.appendChild(document.createTextNode(`${sender}:    ${message}`))
+        // div.setAttribute('class', 'card bg-dark text-light')
+        // chat.appendChild(div)
+        chatBox.appendChild(newmessage)
 
     } else {
         
@@ -128,10 +180,19 @@ socket.on('userStateChange', (userdetails) => {
     const {user, state} = userdetails
     const userElem = document.getElementById(user)
     if (userElem){
+
+        currClass = userElem.getAttribute('class');
         if (!state){
-            userElem.setAttribute('class', 'list-group-item text-danger');
+            // userElem.setAttribute('class', 'list-group-item text-danger');
+
+            
+            currClass = currClass.replace(' text-success', '')
+            userElem.setAttribute('class', `${currClass} text-danger`)
         } else {
-            userElem.setAttribute('class', 'list-group-item text-success');
+
+            // userElem.setAttribute('class', 'list-group-item text-success');
+            currClass = currClass.replace(' text-danger', '')
+            userElem.setAttribute('class', `${currClass} text-success`)
         }
     }
 })
@@ -197,11 +258,20 @@ messageForm.addEventListener('submit', (e)=>{
 })
 
 const addChatToScreen = msg => {
-    const div = document.createElement('div')
-    div.appendChild(document.createTextNode(`${mainUser}:    ${msg}`))
-    div.setAttribute('class', 'card bg-light')
+
+    // const div = document.createElement('div')
+    // div.appendChild(document.createTextNode(`${mainUser}:    ${msg}`))
+    // div.setAttribute('class', 'card bg-light')
+    newmessage =   `
+        <div class="media w-50 ml-auto mb-3">
+            <div class="media-body">
+            <div class="bg-primary rounded py-2 px-3 mb-2">
+                <p class="text-small mb-0 text-white">${msg}</p>
+            </div>
+            <p class="small text-muted">12:00 PM | Aug 13</p>
+            </div>
+        </div>
+    `
+
     chatBox.appendChild(div)
-    
-    // scroll down on receive message
-    chatBox.scrollTop = chatBox.scrollHeight;
 }

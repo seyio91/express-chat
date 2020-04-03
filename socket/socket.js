@@ -76,13 +76,13 @@ socketconn.init = (server)=>{
             //     })
     
     
-            // sendSockets = activeUsers[recipient]
 
             // console.log('receipient available: ', sendSockets)
             sendSockets = getUserSession(recipient, activeUsers)
             if (!sendSockets) return
             sendSockets.forEach(socketid => {
-                io.to(`${socketid}`).emit('receive Message', { message: msg, sender: userID });
+                // to fix send whole message back
+                io.to(`${socketid}`).emit('receive Message', newmessage);
             })
     
         })

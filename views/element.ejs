@@ -1,0 +1,250 @@
+<!doctype html>
+<html><head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>Bootstrap Chat</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <script type="text/javascript" src="/js/lib/dummy.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/css/result-light.css">
+
+      <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+      <script type="text/javascript" src="//code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+      <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <style id="compiled-css" type="text/css">
+      /*
+*
+* ==========================================
+* FOR DEMO PURPOSES
+* ==========================================
+*
+*/
+body {
+  background-color: rgb(255, 255, 255);
+  background-image: linear-gradient(90deg, rgb(255, 255, 255) 0%, #9FACE6 100%);
+
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  width: 5px;
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  width: 1em;
+  background-color: #ddd;
+  outline: 1px solid slategrey;
+  border-radius: 1rem;
+}
+
+.text-small {
+  font-size: 0.9rem;
+}
+
+.messages-box,
+.chat-box {
+  height: 510px;
+  overflow-y: scroll;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+input::placeholder {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+div.senderChat {
+  content: '';
+  position: relative;
+  width: 0;
+  height: 0;
+  top: 0.5em;
+  border: 10px solid;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: #f8f9fa !important;
+  border-bottom-color: transparent;
+}
+
+
+div.receiverChat {
+  content: '';
+  position: relative;
+  width: 0;
+  height: 0;
+  top: 0.5em;
+  /* left: 22px; */
+  /* right: 0.6em; */
+  border: 10px solid;
+  border-top-color: transparent;
+  border-left-color: #007bff !important;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.conversation {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.online-status {
+  display: flex;
+  flex-direction: row;
+  color: rgb(1, 46, 37);
+  font-weight: bold;
+  margin-left: 10px;
+  padding-top: 8px;
+}
+.chatwrapper {
+  width: 100%;
+  word-break: break-word;
+}
+
+.user-status {
+  height: 15px;
+  width: 15px;
+  /* background-color: rgb(2, 190, 127); */
+  border-radius: 50%;
+  margin: 5px;
+  padding: 0;
+  /* display: block; */
+}
+
+.online-user {
+  background-color: rgb(2, 190, 127);
+}
+
+.offline-user {
+  background-color: rgb(190, 2, 2);
+}
+
+.userbox {
+  display: inline-block;
+  position: relative;
+}
+
+.p-status {
+  width: 10px;
+  height: 10px;
+  -webkit-border-radius: 100px;
+  -moz-border-radius: 100px;
+  border-radius: 100px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+  </style>
+
+</head>
+<body>
+    <div class="container py-5 px-4">
+  <div class="row rounded-lg overflow-hidden shadow">
+    <!-- Users box-->
+    <div class="col-5 px-0">
+      <div class="bg-white">
+
+        <div class="bg-gray px-4 py-2 bg-light">
+          <p class="h5 mb-0 py-1">Recent</p>
+        </div>
+
+        <div class="messages-box">
+          <div class="list-group rounded-0" id="users">
+
+            <!-- Sample Conversation Start -->
+
+            <a href="#" class="list-group-item list-group-item-action list-group-item-light rounded-0">
+              <div class="media"><img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
+                <div class="media-body ml-4">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0">Jason Doe</h6><small class="small font-weight-bold">21 Aug</small>
+                  </div>
+                  <p class="font-italic text-muted mb-0 text-small">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore.</p>
+                </div>
+              </div>
+            </a>
+            <!-- Sample Conversation end -->
+
+          </div>
+        </div>
+      </div>
+      <div class="online-status"><span class="user-status online-user"></span><p>Online</p></div>
+    </div>
+    <!-- Chat Box-->
+    <div class="col-7 px-0">
+      <div class="bg-white">
+        <div class="bg-gray px-4 py-2 bg-light">
+          <p class="h5 mb-0 py-1" id="recipient"></p>
+        </div>
+        <div class="px-4 py-5 chat-box bg-white" id="chat">
+        <!-- Sender Message-->
+        <div class="media w-50 mb-3">
+          <div class="media-body ml-3">
+            <div class="bg-light rounded py-2 px-3 mb-2">
+              <p class="text-small mb-0 text-muted">Test which is a new approach all solutions</p>
+            </div>
+            <p class="small text-muted">12:00 PM | Aug 13</p>
+          </div>
+        </div>
+
+        <!-- Reciever Message-->
+        <div class="media w-50 ml-auto mb-3">
+          <div class="media-body">
+            <div class="bg-primary rounded py-2 px-3 mb-2">
+              <p class="text-small mb-0 text-white">Test which is a new approach to have all solutions</p>
+            </div>
+            <p class="small text-muted">12:00 PM | Aug 13</p>
+          </div>
+        </div>
+
+
+
+      </div>
+      </div>
+
+      <!-- Typing area -->
+      <form action="#" class="bg-light" id="messageForm">
+        <div class="input-group">
+          <input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light" message>
+          <div class="input-group-append">
+            <button id="button-addon2" type="submit" class="btn btn-link"> <i class="fa fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script type="module" src="socket/socket_new.js"></script>
+  <script>
+    // tell the embed parent frame the height of the content
+    if (window.parent && window.parent.parent){
+      window.parent.parent.postMessage(["resultsFrame", {
+        height: document.body.getBoundingClientRect().height,
+        slug: "0z71hmax"
+      }], "*")
+    }
+
+    // always overwrite window.name, in case users try to set it manually
+    window.name = "result"
+  </script>
+
+
+</body></html>
