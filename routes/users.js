@@ -37,7 +37,7 @@ router.get('/currentchat/:cid',userAuth, async(req, res)=>{
     res.json(convo)
 })
 
-// replace later
+// get Conversations
 router.get('/conversations', userAuth, async(req, res)=>{
     const sentconversations = await getData(`http://localhost:3000/conversations?uid1=${req.user.email}`)
     const recievedconversations = await getData(`http://localhost:3000/conversations?uid2=${req.user.email}`)
@@ -46,15 +46,18 @@ router.get('/conversations', userAuth, async(req, res)=>{
     res.json(conversations)
 })
 
+// get updateConversations
+router.get('/conversations/:tid', userAuth, async(req, res)=>{
+    const sentconversations = await getData(`http://localhost:3000/conversations?uid1=${req.user.email}&lastMessage.timestamp_gte=${req.params.tid}`)
+    const recievedconversations = await getData(`http://localhost:3000/conversations?uid2=${req.user.email}&lastMessage.timestamp_gte=${req.params.tid}`)
+    updatedConvos = [ ...recievedconversations,...sentconversations]
+    console.log('returning updated conversations')
+    console.log(updatedConvos)
+    res.json(updatedConvos)
+})
+
 router.get('/', userAuth ,async(req, res)=>{
     let {page = 1, limit = 5} = req.query
-    // if (req.session.view){
-    //     req.session.view ++;
-    // }
-    // else{
-    //     req.session.view = 0;
-    // }
-
     queryString = {
         "_sort": "id",
         "_order": "desc",

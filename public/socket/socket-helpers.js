@@ -1,3 +1,5 @@
+// #################################### DOM FUNCTIONS ############################################
+
 // Highlight New Conversation
 // When new Conversation is clicked
 // removes highlight from old conversation
@@ -37,11 +39,8 @@ export const notifyUnreadMsg = (user) => {
 
 //update User Chat
 export const updateConvoList = (data, user) => {
-    let { message , sender, timestamp } = data;
-    let { day, time } = timeDisplayHandler(timestamp)
-    let displayMessage = sender != user ? `you: ${message}` : message
-    let displayTime = day == "" ? time : day
-
+    let { displayMessage, displayTime } = convoHelper(data, user)
+    console.log('user for updating convo', user)
     let lastMessage = document.getElementById(user).querySelectorAll('p')[0];
     let msgDate = document.getElementById(user).querySelectorAll('small')[0];
     lastMessage.innerText = displayMessage
@@ -89,20 +88,15 @@ export const newSentMsg = (messages) => {
     return newmessage;
 }
 
-
 // Create User Conversations
-export const getUserTab = (user, messages) => {
-    // {message: "hi", author: "seyi@yahoo.com", timestamp: "2020-04-03T08:12:03+08:00"}
-    let {message, sender, timestamp} = messages
-    let { day, time } = timeDisplayHandler(timestamp)
-    let displayTime = day == "" ? time : day;
-    let displayMessage = sender != user ? `you: ${message}` : message
+export const getUserTab = (messages, user) => {
+    let { displayMessage, displayTime } = convoHelper(messages, user)
     let contactWrapper = document.createElement('a');
     contactWrapper.innerHTML = `
             <div class="media">
                 <div class="userbox">
                     <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
-                    <span class="p-status offline-user" id="${user}-status"></span>
+                    <span class="p-status offline-user"></span>
                 </div>
         
                 <div class="media-body ml-4">
@@ -118,10 +112,27 @@ export const getUserTab = (user, messages) => {
     return contactWrapper;
     }
 
+// Set all Users as offline if App is disconnected
+export const setUsersOffline = () => {
+    let allUserStatus = document.querySelectorAll('.p-status');
+    allUserStatus.forEach(userStatus => {
+        let userClass = userStatus.getAttribute('class')
+        if (userClass.includes('online-user')){
+            userClass = userClass.replace('online-user', 'offline-user')
+            userStatus.setAttribute('class', userClass)
+        }
+    })
+}
+
+// Get Offline Messages
+// const getOfflineMessages = (convoList) => {
+
+// }
+
 
 // Toggle User Online/ Offline
 export const toggleUserStatus = (user, status) => {
-    let userElem = document.getElementById(`${user}-status`);
+    let userElem = document.getElementById(user).querySelectorAll('span')[0];
     if (userElem) {
         let currClass = userElem.getAttribute('class');
         if (status){
@@ -135,13 +146,30 @@ export const toggleUserStatus = (user, status) => {
     }
 }
 
-// export const msgGenerator = (id, message, receipent) => {
-//     return { cid:id, msg:msg, receipent:receipent, timestamp: moment().format }
-// }
+// Toggle if Device is offline or online
+export const toggleConnStatus = (status) => {
+    let connector = document.getElementById('online-status').querySelector('span')
+    let userStatus = document.getElementById('online-status').querySelector('p')
+
+    let conClass = connector.getAttribute('class');
+    if (status){
+        conClass = conClass.replace(' offline-user', '');
+        connector.setAttribute('class', `${conClass} online-user`);
+        userStatus.innerText = "Online"
+    } else {
+        conClass = conClass.replace(' online-user', '');
+        connector.setAttribute('class', `${conClass} offline-user`);
+        userStatus.innerText = "Offline"
+    }
+}
 
 //toggletimedisplay
 
-export const timeDisplayHandler = (timestamp) => {
+
+// ################################### HELPERS ##################################################
+
+// Time Display Helper
+const timeDisplayHandler = (timestamp) => {
     let msgTime = moment(timestamp);
     let currentMoment = moment()
     let time = msgTime.format('hh:mm A')
@@ -167,4 +195,13 @@ export const timeDisplayHandler = (timestamp) => {
 
       time = day == "" ? time : `| ${time}`
       return { day, time };
+}
+
+// Helper Conversation Details
+const convoHelper = (messages, user) => {
+    let {message, sender, timestamp} = messages
+    let { day, time } = timeDisplayHandler(timestamp)
+    let displayTime = day == "" ? time : day;
+    let displayMessage = sender != user ? `you: ${message}` : message
+    return { displayMessage, displayTime }
 }

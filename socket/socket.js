@@ -170,14 +170,14 @@ function getTime(){
 
 // Helper to create message
 function createMessage(data, userid){
-    const { cid, msg } = data
-    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp: new Date() }
+    const { cid, msg, timestamp } = data
+    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp }
 }
 
 // create conversation
 function updateConversation(data, userid){
-    const { msg, recipient } = data;
-    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, author: userid } }
+    const { msg, recipient, timestamp } = data;
+    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp } }
 }
 
 module.exports = { sessionData, socketconn }
