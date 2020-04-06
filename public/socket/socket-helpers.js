@@ -7,7 +7,7 @@
 export const removePrevConvo = (userChat) => {
     let oldUser = document.getElementById(userChat.participant)
     let oldUserclass = oldUser.getAttribute('class');
-    oldUserclass = oldUserclass.replace('bg-light', "")
+    oldUserclass = oldUserclass.replace(' bg-light', "")
     oldUser.setAttribute('class', oldUserclass);
 }
 
@@ -40,7 +40,6 @@ export const notifyUnreadMsg = (user) => {
 //update User Chat
 export const updateConvoList = (data, user) => {
     let { displayMessage, displayTime } = convoHelper(data, user)
-    console.log('user for updating convo', user)
     let lastMessage = document.getElementById(user).querySelectorAll('p')[0];
     let msgDate = document.getElementById(user).querySelectorAll('small')[0];
     lastMessage.innerText = displayMessage
@@ -56,7 +55,7 @@ export const newReceivedMsg = (messages) => {
         <div class="media-body ml-3">
             <div class="conversation">
                 <div class="senderChat"></div>
-                <div class="bg-light rounded py-2 px-3 chatwrapper">
+                <div class="bg-white rounded py-2 px-3 chatwrapper">
                     <p class="text-small mb-0 text-muted">${message}</p>
                 </div>
             </div>

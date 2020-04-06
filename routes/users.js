@@ -31,9 +31,10 @@ router.get('/chat', userAuth, async(req, res) => {
     // res.render('chat', { user: req.user.email })
     res.render('element')
 })
-
+// router.get('/currentchat/:cid', async(req, res)=>{
 router.get('/currentchat/:cid',userAuth, async(req, res)=>{
     const convo = await getData(`http://localhost:3000/messages?cid=${req.params.cid}`)
+    console.log('this is called')
     res.json(convo)
 })
 

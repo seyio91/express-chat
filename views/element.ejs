@@ -67,6 +67,10 @@ input::placeholder {
   color: #999;
 }
 
+.chatbox-header {
+  background-color: #eee;
+}
+
 div.senderChat {
   content: '';
   position: relative;
@@ -76,7 +80,7 @@ div.senderChat {
   border: 10px solid;
   border-top-color: transparent;
   border-left-color: transparent;
-  border-right-color: #f8f9fa !important;
+  border-right-color: #ffffff !important;
   border-bottom-color: transparent;
 }
 
@@ -151,6 +155,14 @@ div.receiverChat {
   right: 0;
 }
 
+a.hover{
+  background-color: #eee;
+}
+
+.dark-bg {
+  background-color: rgb(219, 217, 217);
+}
+
 
   </style>
 
@@ -162,7 +174,7 @@ div.receiverChat {
     <div class="col-5 px-0">
       <div class="bg-white">
 
-        <div class="bg-gray px-4 py-2 bg-light">
+        <div class="bg-gray px-4 py-2 chatbox-header">
           <p class="h5 mb-0 py-1">Recent</p>
         </div>
 
@@ -175,16 +187,16 @@ div.receiverChat {
     <!-- Chat Box-->
     <div class="col-7 px-0">
       <div class="bg-white">
-        <div class="bg-gray px-4 py-2 bg-light">
+        <div class="bg-gray px-4 py-2 chatbox-header">
           <p class="h5 mb-0 py-1" id="recipient">Message: </p>
         </div>
-        <div class="px-4 py-5 chat-box bg-white" id="chat"></div>
+        <div class="px-4 py-5 chat-box bg-light" id="chat"></div>
       </div>
 
       <!-- Typing area -->
-      <form action="#" class="bg-light" id="messageForm">
+      <form action="#" class="bg-white" id="messageForm">
         <div class="input-group">
-          <input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light" message>
+          <input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-white" message>
           <div class="input-group-append">
             <button id="button-addon2" type="submit" class="btn btn-link"> <i class="fa fa-paper-plane"></i></button>
           </div>
@@ -209,6 +221,6 @@ div.receiverChat {
     // always overwrite window.name, in case users try to set it manually
     window.name = "result"
   </script>
-
+  <!-- <script src="js/chat.js"></script> -->
 
 </body></html>
