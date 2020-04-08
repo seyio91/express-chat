@@ -2,7 +2,7 @@ chatCache = 'chat-messages'
 
 // Call event Listener
 self.addEventListener('install', async e => {
-    console.log('Service Worker installed')
+    // console.log('Service Worker installed')
 
     caches.delete(chatCache)
         .then(bool => console.log(`cache is deleted: ${bool}`))
@@ -11,13 +11,13 @@ self.addEventListener('install', async e => {
 
 // Call activate
 self.addEventListener('activate', e => {
-    console.log('Service Worker Activated')
+    // console.log('Service Worker Activated')
 });
 
 
 // fetch event
 self.addEventListener('fetch', e => {
-    console.log('Service Worker Fetch')
+    // console.log('Service Worker Fetch')
     if (e.request.method !== 'GET') return;
     const req = e.request;
     var url = new URL(e.request.url);
@@ -34,7 +34,6 @@ async function networkFirst(req){
 
     try {
         const res = await fetch(req);
-        console.log(res)
         cache.put(req, res.clone());
         return res;
     } catch (error) {
