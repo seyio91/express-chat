@@ -8,6 +8,22 @@ import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
         setUsersOffline } from './socket-helpers.js'
 
+const WorkerIO = new SharedWorker('/js/shared_worker.js', 'NDN-Worker');
+
+// console.log('WorkerIO:', WorkerIO);
+
+WorkerIO.port.addEventListener('message', function(eventM){
+  console.log('OnMessage:', eventM.data);
+});
+
+WorkerIO.port.start();
+// WorkerIO.port.postMessage('This is a message from the client!');
+
+WorkerIO.port.addEventListener('error', function(e){
+  throw new Error('WorkerIO Error: could not open SharedWorker', e);
+}, false);
+
+
 // create classes for create message, create user
 
 let currentChat = null;
@@ -105,9 +121,6 @@ socket.on('connect', ()=>{
         clearTimeout(timerId)
         timerId = null
         toggleConnStatus(true)
-        // if (currentChat){
-        //     getOnlineUsers()
-        // }
 
         // check for messages while you were offline
         if (lastOffline == null){
