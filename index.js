@@ -7,17 +7,17 @@ const passport = require('passport')
 const fetch = require('node-fetch');
 const handleError = require('./helpers/error')
 const { sessionData, socketconn } = require('./socket/socket')
-
+const keys = require('./helpers/keys');
 
 // require('express-async-errors');
 
 const app = express()
 server = http.createServer(app);
 socketconn.init(server)
-// const io = socketio(server)
 
 // Check if DB can connect and Quit if not// replace with db connection
-fetch('http://localhost:3000/users')
+// fetch('http://localhost:3000/users')
+fetch(`${keys.DBCONN}/users`)
     .then(console.log('DB Connected'))
     .catch(err=>{
         console.log({msg:'App cannot connect to database', Error: err});
@@ -32,8 +32,6 @@ app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({extended: true}))
 
 app.use(express.static(__dirname + '/public'))
-
-// sessionStore = new SQLiteStore()
 
 
 // Use sessions. Note. remove session from socket file
@@ -76,6 +74,7 @@ app.use(function (err, req, res, next) {
 });
 
 const PORT = process.env.PORT || 5000
+console.log('database connection', `${keys.DBCONN}`)
 
 server.listen(PORT, ()=>{
     console.log(`server is listening on port ${PORT}`)

@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const keys = require('./keys');
 
 const buildUrl = (url, parameters) => {
     let qs = "";
@@ -46,7 +47,7 @@ const postData = async (url, data) => {
 }
 
 const updateData = async (url, id ,data) => {
-    console.log(`performing put request to ${url}/${id}`)
+    // console.log(`performing put request to ${url}/${id}`)
     const response = await fetch(`${url}/${id}`, {
         method : 'PUT',
         headers : {
@@ -69,12 +70,12 @@ class User {
     }
 
     async save() {
-        await postData("http://localhost:3000/users/", this)
+        await postData(`${keys.DBCONN}/users/`, this)
         console.log(this)
     }
 
     static async findOneUser(dict = { email: signupEmail}){
-       const userUrl = buildUrl("http://localhost:3000/users/", dict)
+       const userUrl = buildUrl(`${keys.DBCONN}/users/`, dict)
        return await getData(userUrl)
     }
 }
