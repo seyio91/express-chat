@@ -7,7 +7,7 @@ import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
         setUsersOffline } from './socket-helpers.js'
 
-const WorkerIO = new SharedWorker('/js/shared_worker.js', 'NDN-Worker');
+// const WorkerIO = new SharedWorker('shared_worker.js', 'NDN-Worker');
 let currentChat = null;
 let mainUser = null;
 let timerId = null;
@@ -156,7 +156,6 @@ WorkerIO.port.addEventListener('message', function(eventM){
             let newmessage = newSentMsg(genMsg)
             //append to chat box and scroll to location
             chatBox.appendChild(newmessage)
-            console.log('message to append', newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
             updateConvoList(genMsg, currentChat.participant)
 
