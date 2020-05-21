@@ -5,13 +5,15 @@ const chatBox = document.getElementById('chat');
 import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         removePrevConvo, loadConversation, clearUnreadMessage,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
-        setUsersOffline } from './socket-helpers.js'
+        setUsersOffline, renderConvoList } from './socket-helpers.js'
+// import passport from 'passport';
 
 // const WorkerIO = new SharedWorker('shared_worker.js', 'NDN-Worker');
 let currentChat = null;
 let mainUser = null;
 let timerId = null;
 let lastOffline = null;
+let conversationList = [];
 
 WorkerIO.port.addEventListener('message', function(eventM){
     console.log('OnMessage:', eventM.data);
@@ -29,10 +31,16 @@ WorkerIO.port.addEventListener('message', function(eventM){
                     if (!connectedUsers.length){
                         return
                     }
-                    // conversationList = connectedUsers;
+
+                    conversationList = connectedUsers;
                     connectedUsers.forEach((user, index) => {
+                        console.log(user)
                         let { uid1, uid2, id, lastMessage } = user;
                         let participant = mainUser == uid1 ? uid2 : uid1
+                        // let {message, sender, timestamp} = lastMessage
+                        // populate conversation list for user
+                        // conversationList.push({id, name: participant, message, sender, timestamp })
+
                         let contactWrapper = getUserTab(lastMessage, participant)
                         let chat = {participant, id}
                         contactWrapper.addEventListener('click',(chatEvent)(chat))
@@ -61,10 +69,13 @@ WorkerIO.port.addEventListener('message', function(eventM){
             timerId = null
             toggleConnStatus(true)
     
-            // check for messages while you were offline
+            // Check If user was offline or just a page refresh
+            // return if offline is less than one second
             if (lastOffline == null){
                 return
             }
+ 
+            // Return Messages after last time offline
             fetch(`/conversations/${lastOffline}`)
                 .then(res => res.json())
                     .then(updatedMessages=> {
@@ -152,11 +163,27 @@ WorkerIO.port.addEventListener('message', function(eventM){
     if (event == 'new Message'){
         let msgTime = moment().format()
         if (data.success){
+
+            conversationList = renderConvoList(conversationList, currentChat)
             let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime}
             let newmessage = newSentMsg(genMsg)
             //append to chat box and scroll to location
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
+            console.log(conversationList)
+            // render
+            usersElem.innerHTML = "";
+            conversationList.forEach((convo, index) => {
+                const { id, name, message, sender, timestamp } = convo
+                let contactWrapper = getUserTab({ message, sender, timestamp }, name)
+                let chat = {participant:name, id}
+                contactWrapper.addEventListener('click',(chatEvent)(chat))
+                usersElem.appendChild(contactWrapper)
+                if (currentChat.id == id) {
+                    loadConversation(currentChat)
+                }
+            })
+            // end render
             updateConvoList(genMsg, currentChat.participant)
 
         } else {
@@ -167,8 +194,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
 
 });
 
-// WorkerIO.port.start();
-// WorkerIO.port.postMessage('This is a message from the client!');
+
 
 WorkerIO.port.addEventListener('error', function(e){
   throw new Error('WorkerIO Error: could not open SharedWorker', e);
@@ -180,7 +206,8 @@ WorkerIO.port.addEventListener('error', function(e){
 let chatEvent = (chat) => {
     return ()=>{
         if (currentChat !== chat){
-            setCurrentChat(chat) 
+            console.log(chat)
+            setCurrentChat(chat);
         }
     }
 }
@@ -230,6 +257,7 @@ const setCurrentChat = (chat) => {
         chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+
 const getOnlineUsers = () => {
     WorkerIO.port.postMessage({ event: 'getonlineUsers', data: '' })
 }
@@ -242,7 +270,7 @@ messageForm.addEventListener('submit', (e)=>{
     if (!msg){
         return
     }
-    let msgTime = moment().format()
+    let msgTime = moment().format();
 
     //emit message to user
     WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, recipient: currentChat.participant, timestamp: msgTime } })
@@ -251,7 +279,8 @@ messageForm.addEventListener('submit', (e)=>{
     e.target.elements[0].focus();
 })
 
-
+// console.log(`connected users returned`)
+// console.log(conversationList)
 
 
 
