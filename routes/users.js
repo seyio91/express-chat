@@ -28,6 +28,11 @@ router.get('/currentchat/:cid',userAuth, async(req, res)=>{
     res.json(convo)
 })
 
+router.get('/currentchat/:cid/:tid',userAuth, async(req, res)=>{
+    const convo = await getData(`${keys.DBCONN}/messages?cid=${req.params.cid}&timestamp_gte=${req.params.tid}`)
+    res.json(convo)
+})
+
 // get Conversations
 router.get('/conversations', userAuth, async(req, res)=>{
     const sentconversations = await getData(`${keys.DBCONN}/conversations?uid1=${req.user.email}`)

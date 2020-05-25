@@ -82,18 +82,11 @@ WorkerIO.port.addEventListener('message', function(eventM){
                         if(!updatedMessages.length){
                             return
                         }
+
+                        // render the whole list and display
                         updatedMessages.forEach(conversation => {
-                            //no need to check the user. definitely does not belong to me
-                            // for each message, get last message sender
                             let message = conversation.lastMessage
-                            // update the UI
                             const { sender } = message;
-    
-                            // check if Message is new conversation
-                            // if the User does not exist
-                            // create a new conversation
-                            // add click event
-                            // append to user list
                             let testdoc = document.getElementById(sender)
                             if (testdoc == null){
                                 let { id } = conversation;
@@ -104,19 +97,12 @@ WorkerIO.port.addEventListener('message', function(eventM){
                             } else {
                                 updateConvoList(message, sender)
                                 if (currentChat.participant == sender){
-                                    let newmessage = newReceivedMsg(message)
-                                    // Append to Chat and Scroll down
-                                    chatBox.appendChild(newmessage)
-                                    chatBox.scrollTop = chatBox.scrollHeight;
+                                    fetchMessages(currentChat.id, lastOffline)
                             
                                 } else {    
-                                    // Show notification if you are not currentchat
                                     notifyUnreadMsg(sender)
                                 }
                             }
-     
-    
-    
                         })
                     })
                     if (currentChat){
@@ -130,8 +116,22 @@ WorkerIO.port.addEventListener('message', function(eventM){
   
   
     if (event == 'receive Message'){
-        const { sender } = data;
-        updateConvoList(data, sender)
+        const { sender, cid, message, timestamp } = data;
+        conversationList = renderConvoList(conversationList, cid, { message, sender, timestamp })
+        usersElem.innerHTML = "";
+        conversationList.forEach((convo, index) => {
+            const { id, uid1, uid2 } = convo
+            let participant = mainUser == uid1 ? uid2 : uid1
+            const {message, sender, timestamp} = convo.lastMessage
+            let contactWrapper = getUserTab({ message, sender, timestamp }, participant)
+            let chat = { participant, id }
+            contactWrapper.addEventListener('click',(chatEvent)(chat))
+            usersElem.appendChild(contactWrapper)
+            if (currentChat.id == id) {
+                loadConversation(currentChat)
+            }
+        })
+
         if (currentChat.participant == sender){
             let newmessage = newReceivedMsg(data)
             // Append to Chat and Scroll down
@@ -164,19 +164,20 @@ WorkerIO.port.addEventListener('message', function(eventM){
         let msgTime = moment().format()
         if (data.success){
 
-            conversationList = renderConvoList(conversationList, currentChat)
             let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime}
+            conversationList = renderConvoList(conversationList, currentChat.id, genMsg)
             let newmessage = newSentMsg(genMsg)
             //append to chat box and scroll to location
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
-            console.log(conversationList)
             // render
             usersElem.innerHTML = "";
             conversationList.forEach((convo, index) => {
-                const { id, name, message, sender, timestamp } = convo
-                let contactWrapper = getUserTab({ message, sender, timestamp }, name)
-                let chat = {participant:name, id}
+                const { id, uid1, uid2 } = convo
+                let participant = mainUser == uid1 ? uid2 : uid1
+                const {message, sender, timestamp} = convo.lastMessage
+                let contactWrapper = getUserTab({ message, sender, timestamp }, participant)
+                let chat = { participant, id }
                 contactWrapper.addEventListener('click',(chatEvent)(chat))
                 usersElem.appendChild(contactWrapper)
                 if (currentChat.id == id) {
@@ -184,7 +185,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
                 }
             })
             // end render
-            updateConvoList(genMsg, currentChat.participant)
+            // updateConvoList(genMsg, currentChat.participant)
 
         } else {
             // Error to show Unable to send
@@ -206,7 +207,6 @@ WorkerIO.port.addEventListener('error', function(e){
 let chatEvent = (chat) => {
     return ()=>{
         if (currentChat !== chat){
-            console.log(chat)
             setCurrentChat(chat);
         }
     }
@@ -234,26 +234,30 @@ const setCurrentChat = (chat) => {
 
     receiverElem.innerText = `Message: ${participant}`;
 
-    // Load chat for new Current Chat Ajax request for current Chat
-    fetch(`/currentchat/${id}`)
-        .then(res => res.json())
-            .then(data => {
-                data.forEach(messages => {
-                    const { sender } = messages;
-                    let newmessage = null
-                    if (sender == currentChat.participant){
+    fetchMessages(id)
 
-                        newmessage = newReceivedMsg(messages)
+}
 
-                    } else {
+const fetchMessages = (id, timestamp = null) => {
+    let messageURL = timestamp == null ? `/currentchat/${id}` : `/currentchat/${id}/${timestamp}`
+    fetch(messageURL)
+    .then(res => res.json())
+        .then(data => {
+            data.forEach(messages => {
+                const { sender } = messages;
+                let newmessage = null
+                if (sender == currentChat.participant){
 
-                        newmessage = newSentMsg(messages)
+                    newmessage = newReceivedMsg(messages)
 
-                    }
-                    chatBox.appendChild(newmessage)
-                })
+                } else {
+
+                    newmessage = newSentMsg(messages)
+
+                }
+                chatBox.appendChild(newmessage)
             })
-
+        })
         chatBox.scrollTop = chatBox.scrollHeight;
 }
 
@@ -279,8 +283,6 @@ messageForm.addEventListener('submit', (e)=>{
     e.target.elements[0].focus();
 })
 
-// console.log(`connected users returned`)
-// console.log(conversationList)
 
 
 

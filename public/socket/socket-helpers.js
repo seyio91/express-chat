@@ -206,18 +206,19 @@ const convoHelper = (messages, user) => {
 }
 
 
-export const renderConvoList = (convoList, current, message="") => {
+export const renderConvoList = (convoList, id, message = null) => {
     // get its position from list
-    let index = convoList.findIndex(convo => convo.id == current.id)
+    let index = convoList.findIndex(convo => convo.id == id)
     // ignore if first position already
-    if (index == 0) return convoList;
+    convoList[index].lastMessage = message
+    if (index != 0){
     // store value temp
     let temp = convoList[index]
-    console.log(temp)
     // remove delete from position
     convoList.splice(index, 1)
     // add to top
     convoList.unshift(temp)
+    }
     // rerender
     return convoList
 }
