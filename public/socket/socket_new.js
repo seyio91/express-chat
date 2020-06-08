@@ -184,9 +184,6 @@ WorkerIO.port.addEventListener('message', function(eventM){
                     loadConversation(currentChat)
                 }
             })
-            // end render
-            // updateConvoList(genMsg, currentChat.participant)
-
         } else {
             // Error to show Unable to send
             console.log(`nothing`)
