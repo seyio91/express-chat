@@ -162,8 +162,6 @@ export const toggleConnStatus = (status) => {
     }
 }
 
-//toggletimedisplay
-
 
 // ################################### HELPERS ##################################################
 
@@ -207,18 +205,12 @@ const convoHelper = (messages, user) => {
 
 
 export const renderConvoList = (convoList, id, message = null) => {
-    // get its position from list
     let index = convoList.findIndex(convo => convo.id == id)
-    // ignore if first position already
     convoList[index].lastMessage = message
     if (index != 0){
-    // store value temp
-    let temp = convoList[index]
-    // remove delete from position
-    convoList.splice(index, 1)
-    // add to top
-    convoList.unshift(temp)
+        let temp = convoList[index]
+        convoList.splice(index, 1)
+        convoList.unshift(temp)
     }
-    // rerender
     return convoList
 }
