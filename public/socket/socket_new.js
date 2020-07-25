@@ -2,10 +2,28 @@ const usersElem = document.getElementById("users");
 const receiverElem = document.getElementById("recipient");
 const messageForm = document.getElementById('messageForm');
 const chatBox = document.getElementById('chat');
+// const newchat = document.getElementById('newchat');
 import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         removePrevConvo, loadConversation, clearUnreadMessage,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
         setUsersOffline, renderConvoList } from './socket-helpers.js'
+
+
+// chat new
+$("#newchat").click(function() {
+    $(".side-two").css({
+      "left": "0"
+    });
+});
+
+// return
+$("#returnchat").click(function() {
+    $(".side-two").css({
+      "left": "-100%"
+    });
+  });
+
+
 // import passport from 'passport';
 
 // const WorkerIO = new SharedWorker('shared_worker.js', 'NDN-Worker');

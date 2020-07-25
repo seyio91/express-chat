@@ -16,8 +16,8 @@ router.post('/signup', validationRules(), validate, async(req, res)=> {
     const {signupfName, signuplName, signupEmail, signupuName, passCode, passConfirm} = req.body
     if (res.locals.errors){
         // if errors render and pass values back
-        console.log(res.locals.errors)
-        console.log('error exists')
+        // console.log(res.locals.errors)
+        // console.log('error exists')
         res.render('signup', {
             signupfName,
             signuplName,
@@ -29,7 +29,7 @@ router.post('/signup', validationRules(), validate, async(req, res)=> {
     }
 
     // Check user email exists using getData helper
-    const result = await User.findOneUser({email:signupEmail})
+    const result = await User.findOneUser({ email:signupEmail })
     if (result.length > 0){
         res.locals.errors = [ 'User Exists' ]
         res.render('signup', {
