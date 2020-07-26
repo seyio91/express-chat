@@ -7,10 +7,8 @@ const newchat = document.getElementById('newchat');
 const newchatlist = document.querySelector('.side-two');
 const returnchat = document.getElementById('returnchat');
 import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
-        removePrevConvo, loadConversation, clearUnreadMessage,
-        notifyUnreadMsg, updateConvoList, toggleConnStatus,
-        setUsersOffline, renderConvoList, newUserTab,
-        conversationMerge, singleConvo } from './socket-helpers.js'
+        removePrevConvo, loadConversation,notifyUnreadMsg, toggleConnStatus,
+        setUsersOffline, newUserTab,conversationMerge, singleConvo } from './socket-helpers.js'
 
 
 // return
@@ -66,8 +64,8 @@ let conversationList = [];
 
 
 const displayConvolist = (firstload = false) => {
-    console.log(conversationList);
     usersElem.innerHTML = "";
+    let indexChat = null
     conversationList.forEach((user, index) => {
         let { uid1, uid2, id, lastMessage } = user;
         let participant = mainUser == uid1 ? uid2 : uid1;
@@ -75,13 +73,17 @@ const displayConvolist = (firstload = false) => {
         let chat = {participant, id, lastMessage}
         contactWrapper.addEventListener('click',(chatEvent)(chat))
         usersElem.appendChild(contactWrapper)
-        if (firstload) {
-            if (index == 0){
-                setCurrentChat(chat)
-            }
-        }
+        if (index == 0){ indexChat = chat}
+        //     if (index == 0){
+        //         setCurrentChat(chat)
+        //     }
     })
-    if (! firstload) loadConversation(currentChat)
+    if (! firstload) {
+        loadConversation(currentChat)
+    } else {
+        // chat for first conversation
+        setCurrentChat(indexChat)
+    }
 }
 
 
@@ -107,7 +109,6 @@ WorkerIO.port.addEventListener('message', function(eventM){
     }
 
     if (event == 'getonlineUsers'){
-        console.log(data)
         data.forEach(onlineuser => {
             toggleUserStatus(onlineuser, true);
             return
@@ -122,9 +123,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
     
             // Check If user was offline or just a page refresh
             // return if offline is less than one second
-            if (lastOffline == null){
-                return
-            }
+            if (lastOffline == null) return
  
             // Return Messages after last time offline
             fetch(`/conversations/${lastOffline}`)
@@ -133,12 +132,16 @@ WorkerIO.port.addEventListener('message', function(eventM){
                         if(!updatedMessages.length) return
                         // render the whole list and display
                         conversationList = conversationMerge(conversationList, updatedMessages)
+                        let messageIndex = updatedMessages.findIndex(conversation => currentChat.id == conversation.id)
+                        if (messageIndex != -1){
+                            conversationList = setReadChat(currentChat.id, conversationList)
+                            fetchMessages(currentChat.id, lastOffline)
+                            // send read emitter
+                            readMessageEmitter()
+                        }
                         displayConvolist()
                     })
-                    if (currentChat){
-                        getOnlineUsers()
-                    }
-    
+                    if (currentChat) getOnlineUsers()
             lastOffline = null
         }
         
@@ -150,11 +153,13 @@ WorkerIO.port.addEventListener('message', function(eventM){
         const { sender, cid, message, timestamp } = data;
         let readvalue = false;
         if (currentChat.id == cid){
+            readMessageEmitter()
+            readvalue = true
+            // emitread
             // append to chat
             let newmessage = newReceivedMsg(data)
             chatBox.appendChild(newmessage)
-            chatBox.scrollTop = chatBox.scrollHeight;
-            readvalue = true
+            chatBox.scrollTop = chatBox.scrollHeight;    
         }
         let convo = singleConvo(cid, mainUser, message, readvalue, sender, timestamp)
         conversationList = conversationMerge(conversationList, [convo])
@@ -232,27 +237,26 @@ const setCurrentChat = (chat) => {
 
     // clear unread notification
     // set message as read in store using id and tell server i read all conversations
-    setReadChat(id)
-
-    // emit read message to server if last message was unread
-    if (!lastMessage.read){
-        readMessageEmitter()
+    if (lastMessage.sender == participant && !lastMessage.read ){
+        conversationList = setReadChat(id, conversationList)
+        readMessageEmitter(id)
+        displayConvolist()
     }
     
-    clearUnreadMessage(participant)
-
     receiverElem.innerText = `Message: ${participant}`;
 
     fetchMessages(id)
 
 }
 
-const setReadChat = id => {
+const setReadChat = (id, convoList) => {
     console.log('setting read chat in store')
-
+    let messageIndex = convoList.findIndex(conversation => id == conversation.id);
+    convoList[messageIndex]['lastMessage']['read'] = true;
+    return convoList;
 }
 
-const readMessageEmitter = () => {
+const readMessageEmitter = (id) => {
     console.log('emitting sent message')
 }
 
@@ -263,16 +267,7 @@ const fetchMessages = (id, timestamp = null) => {
         .then(data => {
             data.forEach(messages => {
                 const { sender } = messages;
-                let newmessage = null
-                if (sender == currentChat.participant){
-
-                    newmessage = newReceivedMsg(messages)
-
-                } else {
-
-                    newmessage = newSentMsg(messages)
-
-                }
+                let newmessage = sender == currentChat.participant ? newReceivedMsg(messages) : newSentMsg(messages)
                 chatBox.appendChild(newmessage)
             })
         })
@@ -296,7 +291,6 @@ messageForm.addEventListener('submit', (e)=>{
     let msgTime = moment().format();
 
     //emit message to user
-    // WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, recipient: currentChat.participant, timestamp: msgTime } })
     WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, sender: mainUser, recipient: currentChat.participant, timestamp: msgTime } })
 
     e.target.elements[0].value = '';
