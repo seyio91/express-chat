@@ -65,7 +65,7 @@ socketconn.init = (server)=>{
             newmessage = createMessage(data, userID)
             conversation = updateConversation(data, userID)
 
-            console.log('storing new message', newmessage)
+            // console.log('storing new message', newmessage)
 
             // send to save messsage
             // postData('http://localhost:3000/messages', newmessage)
@@ -80,12 +80,10 @@ socketconn.init = (server)=>{
 
             // console.log('receipient available: ', sendSockets)
             sendSockets = getUserSession(recipient, activeUsers)
-            console.log('sendsocket')
             if (!sendSockets) return
             sendSockets.forEach(socketid => {
                 // to fix send whole message back
                 io.to(`${socketid}`).emit('receive Message', newmessage);
-                console.log('sending mary message')
             })
     
         })

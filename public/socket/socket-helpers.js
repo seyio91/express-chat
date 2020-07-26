@@ -248,16 +248,6 @@ export const newUserTab = (userObj) => {
     return contactWrapper;
 }
 
-// export const conversationMerge = (target, source, prop) => {
-//     source.forEach(sourceElem => {
-//         let targetElement = target.find(targetValue => {
-//             return sourceElem[prop] == targetValue[prop];
-//         })
-//         targetElement ? Object.assign(targetElement, sourceElem) :  target.unshift(sourceElem);
-//     })
-//     console.log(target)
-//     return target;
-// }
 
 export const conversationMerge = (target, source) => {
     source.forEach(sourceElem => {
@@ -266,4 +256,19 @@ export const conversationMerge = (target, source) => {
 		target.unshift(sourceElem);
     })
     return target;
+}
+
+
+export const singleConvo = (cid, uid1, msg, read, sender, timestamp) => {
+    return {
+        id: cid,
+        uid1,
+        uid2: sender,
+        lastMessage: {
+            message: msg,
+            read,
+            sender,
+            timestamp
+        }
+    }
 }

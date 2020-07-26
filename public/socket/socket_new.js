@@ -10,7 +10,7 @@ import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         removePrevConvo, loadConversation, clearUnreadMessage,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
         setUsersOffline, renderConvoList, newUserTab,
-        conversationMerge } from './socket-helpers.js'
+        conversationMerge, singleConvo } from './socket-helpers.js'
 
 
 // return
@@ -91,7 +91,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
 
     if (event == 'new session'){
         mainUser = data
-        console.log('mainuser is: ',mainUser)
+        // console.log('mainuser is: ',mainUser)
         // make an ajax call to get list of all your users
         toggleConnStatus(true)
         fetch(`/conversations`)
@@ -107,6 +107,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
     }
 
     if (event == 'getonlineUsers'){
+        console.log(data)
         data.forEach(onlineuser => {
             toggleUserStatus(onlineuser, true);
             return
@@ -146,19 +147,18 @@ WorkerIO.port.addEventListener('message', function(eventM){
   
   
     if (event == 'receive Message'){
-        const { sender, cid, message, timestamp, read } = data;
-        conversationList = renderConvoList(conversationList, cid, { message, sender, timestamp, read })
-        displayConvolist();
-        if (currentChat.participant == sender){
+        const { sender, cid, message, timestamp } = data;
+        let readvalue = false;
+        if (currentChat.id == cid){
+            // append to chat
             let newmessage = newReceivedMsg(data)
-            // Append to Chat and Scroll down
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
-    
-        } else {    
-            // Show notification if you are not currentchat
-            notifyUnreadMsg(sender)
+            readvalue = true
         }
+        let convo = singleConvo(cid, mainUser, message, readvalue, sender, timestamp)
+        conversationList = conversationMerge(conversationList, [convo])
+        displayConvolist();
         return
     }
 
@@ -173,7 +173,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
             setUsersOffline()
             // lastOffline = moment().format()
             lastOffline = "2020-04-02T08:12:03+08:00"
-            console.log('my last time offline in this session', lastOffline)
+            // console.log('my last time offline in this session', lastOffline)
         }, 3000);
     }
 
@@ -181,7 +181,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
         let msgTime = moment().format()
         if (data.success){
             console.log(data)
-            let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime, read: true}
+            let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime, read: false}
             conversationList = renderConvoList(conversationList, currentChat.id, genMsg)
             let newmessage = newSentMsg(genMsg)
             //append to chat box and scroll to location
@@ -300,7 +300,7 @@ messageForm.addEventListener('submit', (e)=>{
 
     //emit message to user
     // WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, recipient: currentChat.participant, timestamp: msgTime } })
-    WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, sender: mainUser, timestamp: msgTime } })
+    WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, sender: mainUser, recipient: currentChat.participant, timestamp: msgTime } })
 
     e.target.elements[0].value = '';
     e.target.elements[0].focus();
