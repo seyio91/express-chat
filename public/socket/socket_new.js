@@ -1,28 +1,59 @@
 const usersElem = document.getElementById("users");
+const alluserElem = document.getElementById("allusers");
 const receiverElem = document.getElementById("recipient");
 const messageForm = document.getElementById('messageForm');
 const chatBox = document.getElementById('chat');
-// const newchat = document.getElementById('newchat');
+const newchat = document.getElementById('newchat');
+const newchatlist = document.querySelector('.side-two');
+const returnchat = document.getElementById('returnchat');
 import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
         removePrevConvo, loadConversation, clearUnreadMessage,
         notifyUnreadMsg, updateConvoList, toggleConnStatus,
-        setUsersOffline, renderConvoList } from './socket-helpers.js'
+        setUsersOffline, renderConvoList, newUserTab,
+        conversationMerge } from './socket-helpers.js'
 
-
-// chat new
-$("#newchat").click(function() {
-    $(".side-two").css({
-      "left": "0"
-    });
-});
 
 // return
-$("#returnchat").click(function() {
-    $(".side-two").css({
-      "left": "-100%"
-    });
-  });
+newchat.addEventListener('click', (event)=>{
+    newchatlist.style.left = '0';
+    // load all users
+    fetch('/userlist')
+        .then(res => res.json())
+            .then(allUsers => {
+                // handle empty list here
+                // if list lenght = 1
+                // display no available users
 
+                allUsers.forEach(user => {
+                    // check if user is not current user
+                    if (user.email != mainUser){
+                        // render chat page
+                        let contactWrapper = newUserTab(user)
+                        alluserElem.appendChild(contactWrapper)
+                    }
+                })
+            })
+})
+
+// return chat list
+returnchat.addEventListener('click', (event)=>{
+    newchatlist.style.left = '-100%';
+    setTimeout(()=>{
+        alluserElem.innerHTML = "";
+    }, 200)
+})
+
+
+// new chat event
+let newChatEvent = (userid) => {
+    return ()=>{
+        // search through conversationList
+        
+        if (currentChat !== chat){
+            // setCurrentChat(chat);
+        }
+    }
+}
 
 // import passport from 'passport';
 
@@ -33,48 +64,49 @@ let timerId = null;
 let lastOffline = null;
 let conversationList = [];
 
+
+const displayConvolist = (firstload = false) => {
+    console.log(conversationList);
+    usersElem.innerHTML = "";
+    conversationList.forEach((user, index) => {
+        let { uid1, uid2, id, lastMessage } = user;
+        let participant = mainUser == uid1 ? uid2 : uid1;
+        let contactWrapper = getUserTab(lastMessage, participant)
+        let chat = {participant, id, lastMessage}
+        contactWrapper.addEventListener('click',(chatEvent)(chat))
+        usersElem.appendChild(contactWrapper)
+        if (firstload) {
+            if (index == 0){
+                setCurrentChat(chat)
+            }
+        }
+    })
+    if (! firstload) loadConversation(currentChat)
+}
+
+
 WorkerIO.port.addEventListener('message', function(eventM){
     console.log('OnMessage:', eventM.data);
     let { event, data } = eventM.data
 
     if (event == 'new session'){
         mainUser = data
-        // console.log('mainuser is: ',mainUser)
+        console.log('mainuser is: ',mainUser)
         // make an ajax call to get list of all your users
         toggleConnStatus(true)
         fetch(`/conversations`)
             .then(res => res.json())
                 .then(connectedUsers => {
                     usersElem.innerHTML = "";
-                    if (!connectedUsers.length){
-                        return
-                    }
-
-                    conversationList = connectedUsers;
-                    connectedUsers.forEach((user, index) => {
-                        console.log(user)
-                        let { uid1, uid2, id, lastMessage } = user;
-                        let participant = mainUser == uid1 ? uid2 : uid1
-                        // let {message, sender, timestamp} = lastMessage
-                        // populate conversation list for user
-                        // conversationList.push({id, name: participant, message, sender, timestamp })
-
-                        let contactWrapper = getUserTab(lastMessage, participant)
-                        let chat = {participant, id}
-                        contactWrapper.addEventListener('click',(chatEvent)(chat))
-                        usersElem.appendChild(contactWrapper)
-                        if (index == 0){
-                            setCurrentChat(chat)
-                        }
-                    })
+                    if (!connectedUsers.length) return
+                    conversationList = connectedUsers.reverse();
+                    displayConvolist(true)
                     getOnlineUsers()
-                
                 })
                 return
     }
 
     if (event == 'getonlineUsers'){
-
         data.forEach(onlineuser => {
             toggleUserStatus(onlineuser, true);
             return
@@ -97,31 +129,10 @@ WorkerIO.port.addEventListener('message', function(eventM){
             fetch(`/conversations/${lastOffline}`)
                 .then(res => res.json())
                     .then(updatedMessages=> {
-                        if(!updatedMessages.length){
-                            return
-                        }
-
+                        if(!updatedMessages.length) return
                         // render the whole list and display
-                        updatedMessages.forEach(conversation => {
-                            let message = conversation.lastMessage
-                            const { sender } = message;
-                            let testdoc = document.getElementById(sender)
-                            if (testdoc == null){
-                                let { id } = conversation;
-                                let contactWrapper = getUserTab(message, sender)
-                                let chat = {sender, id}
-                                contactWrapper.addEventListener('click',(chatEvent)(chat))
-                                usersElem.appendChild(contactWrapper)
-                            } else {
-                                updateConvoList(message, sender)
-                                if (currentChat.participant == sender){
-                                    fetchMessages(currentChat.id, lastOffline)
-                            
-                                } else {    
-                                    notifyUnreadMsg(sender)
-                                }
-                            }
-                        })
+                        conversationList = conversationMerge(conversationList, updatedMessages)
+                        displayConvolist()
                     })
                     if (currentChat){
                         getOnlineUsers()
@@ -129,27 +140,15 @@ WorkerIO.port.addEventListener('message', function(eventM){
     
             lastOffline = null
         }
+        
         return
     }
   
   
     if (event == 'receive Message'){
-        const { sender, cid, message, timestamp } = data;
-        conversationList = renderConvoList(conversationList, cid, { message, sender, timestamp })
-        usersElem.innerHTML = "";
-        conversationList.forEach((convo, index) => {
-            const { id, uid1, uid2 } = convo
-            let participant = mainUser == uid1 ? uid2 : uid1
-            const {message, sender, timestamp} = convo.lastMessage
-            let contactWrapper = getUserTab({ message, sender, timestamp }, participant)
-            let chat = { participant, id }
-            contactWrapper.addEventListener('click',(chatEvent)(chat))
-            usersElem.appendChild(contactWrapper)
-            if (currentChat.id == id) {
-                loadConversation(currentChat)
-            }
-        })
-
+        const { sender, cid, message, timestamp, read } = data;
+        conversationList = renderConvoList(conversationList, cid, { message, sender, timestamp, read })
+        displayConvolist();
         if (currentChat.participant == sender){
             let newmessage = newReceivedMsg(data)
             // Append to Chat and Scroll down
@@ -181,27 +180,15 @@ WorkerIO.port.addEventListener('message', function(eventM){
     if (event == 'new Message'){
         let msgTime = moment().format()
         if (data.success){
-
-            let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime}
+            console.log(data)
+            let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime, read: true}
             conversationList = renderConvoList(conversationList, currentChat.id, genMsg)
             let newmessage = newSentMsg(genMsg)
             //append to chat box and scroll to location
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
             // render
-            usersElem.innerHTML = "";
-            conversationList.forEach((convo, index) => {
-                const { id, uid1, uid2 } = convo
-                let participant = mainUser == uid1 ? uid2 : uid1
-                const {message, sender, timestamp} = convo.lastMessage
-                let contactWrapper = getUserTab({ message, sender, timestamp }, participant)
-                let chat = { participant, id }
-                contactWrapper.addEventListener('click',(chatEvent)(chat))
-                usersElem.appendChild(contactWrapper)
-                if (currentChat.id == id) {
-                    loadConversation(currentChat)
-                }
-            })
+            displayConvolist()
         } else {
             // Error to show Unable to send
             console.log(`nothing`)
@@ -220,8 +207,9 @@ WorkerIO.port.addEventListener('error', function(e){
 // create classes for create message, create user
 
 let chatEvent = (chat) => {
+    let { id } = chat;
     return ()=>{
-        if (currentChat !== chat){
+        if (currentChat.id != chat.id){
             setCurrentChat(chat);
         }
     }
@@ -239,18 +227,36 @@ const setCurrentChat = (chat) => {
     //set new chat as selected
     loadConversation(currentChat)
 
+    // clear chatbox
     chatBox.innerHTML = ""
 
     // Set receiver element
-    let {participant, id } = currentChat;
+    let {participant, id, lastMessage } = currentChat;
 
     // clear unread notification
+    // set message as read in store using id and tell server i read all conversations
+    setReadChat(id)
+
+    // emit read message to server if last message was unread
+    if (!lastMessage.read){
+        readMessageEmitter()
+    }
+    
     clearUnreadMessage(participant)
 
     receiverElem.innerText = `Message: ${participant}`;
 
     fetchMessages(id)
 
+}
+
+const setReadChat = id => {
+    console.log('setting read chat in store')
+
+}
+
+const readMessageEmitter = () => {
+    console.log('emitting sent message')
 }
 
 const fetchMessages = (id, timestamp = null) => {
@@ -282,6 +288,7 @@ const getOnlineUsers = () => {
 }
 
 
+
 // Submitting and sending Message
 messageForm.addEventListener('submit', (e)=>{
     e.preventDefault()
@@ -292,13 +299,11 @@ messageForm.addEventListener('submit', (e)=>{
     let msgTime = moment().format();
 
     //emit message to user
-    WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, recipient: currentChat.participant, timestamp: msgTime } })
+    // WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, recipient: currentChat.participant, timestamp: msgTime } })
+    WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, sender: mainUser, timestamp: msgTime } })
 
     e.target.elements[0].value = '';
     e.target.elements[0].focus();
 })
-
-
-
 
 WorkerIO.port.start();

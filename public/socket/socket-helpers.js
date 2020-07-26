@@ -42,7 +42,8 @@ export const updateConvoList = (data, user) => {
     let { displayMessage, displayTime } = convoHelper(data, user)
     let lastMessage = document.getElementById(user).querySelectorAll('p')[0];
     let msgDate = document.getElementById(user).querySelectorAll('small')[0];
-    lastMessage.innerText = displayMessage
+    // lastMessage.innerText = displayMessage
+    lastMessage.innerHTML = displayMessage
     msgDate.innerText =   displayTime
 }
 
@@ -196,21 +197,73 @@ const timeDisplayHandler = (timestamp) => {
 
 // Helper Conversation Details
 const convoHelper = (messages, user) => {
-    let {message, sender, timestamp} = messages
+    let displayMessage= '';
+    let {message, sender, timestamp, read } = messages
     let { day, time } = timeDisplayHandler(timestamp)
     let displayTime = day == "" ? time : day;
-    let displayMessage = sender != user ? `you: ${message}` : message
+    // let displayMessage = sender != user ? `you: ${message}` : message
+    // if (!read) displayMessage = `<b>${displayMessage}</b>`
+    if (sender != user) {
+        displayMessage =  `you: ${message}`;
+    } else {
+        if (read){
+            displayMessage = message;
+        } else {
+            displayMessage = `<b>${message}</b>`
+        }
+    }
     return { displayMessage, displayTime }
 }
 
 
 export const renderConvoList = (convoList, id, message = null) => {
     let index = convoList.findIndex(convo => convo.id == id)
-    convoList[index].lastMessage = message
+    message ? convoList[index].lastMessage = message : null;
+    // convoList[index].lastMessage = message
     if (index != 0){
         let temp = convoList[index]
         convoList.splice(index, 1)
         convoList.unshift(temp)
     }
     return convoList
+}
+
+export const newUserTab = (userObj) => {
+    let contactWrapper = document.createElement('a');
+    contactWrapper.innerHTML = `
+            <div class="media">
+                <div class="userbox">
+                    <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
+                </div>
+        
+                <div class="media-body ml-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="mb-0">${userObj.email}</h6>
+                    </div>
+                </div>
+        </div>
+    `
+    contactWrapper.setAttribute('class', 'list-group-item list-group-item-action list-group-item-light rounded-0')
+    contactWrapper.setAttribute('id', `${userObj.email}`);
+    return contactWrapper;
+}
+
+// export const conversationMerge = (target, source, prop) => {
+//     source.forEach(sourceElem => {
+//         let targetElement = target.find(targetValue => {
+//             return sourceElem[prop] == targetValue[prop];
+//         })
+//         targetElement ? Object.assign(targetElement, sourceElem) :  target.unshift(sourceElem);
+//     })
+//     console.log(target)
+//     return target;
+// }
+
+export const conversationMerge = (target, source) => {
+    source.forEach(sourceElem => {
+		let index = target.findIndex(convo => convo.id == sourceElem.id)
+		if (index != -1) target.splice(index, 1);
+		target.unshift(sourceElem);
+    })
+    return target;
 }

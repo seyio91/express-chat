@@ -59,7 +59,7 @@ socketconn.init = (server)=>{
         // console.log(activeUsers)
     
         socket.on('new Message', (data, callback) => {
-            callback(true)
+            
             const { cid, msg, recipient } = data
 
             newmessage = createMessage(data, userID)
@@ -75,14 +75,17 @@ socketconn.init = (server)=>{
             //             .then(()=> console.log('Success Creating Conversation'))
             //     })
     
-    
+            // only true after saving the message
+            callback(true)
 
             // console.log('receipient available: ', sendSockets)
             sendSockets = getUserSession(recipient, activeUsers)
+            console.log('sendsocket')
             if (!sendSockets) return
             sendSockets.forEach(socketid => {
                 // to fix send whole message back
                 io.to(`${socketid}`).emit('receive Message', newmessage);
+                console.log('sending mary message')
             })
     
         })
@@ -171,13 +174,13 @@ function getTime(){
 // Helper to create message
 function createMessage(data, userid){
     const { cid, msg, timestamp } = data
-    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp }
+    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp, read: false }
 }
 
 // create conversation
 function updateConversation(data, userid){
-    const { msg, recipient, timestamp } = data;
-    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp } }
+    const { msg, recipient, timestamp, read } = data;
+    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp, read } }
 }
 
 module.exports = { sessionData, socketconn }
