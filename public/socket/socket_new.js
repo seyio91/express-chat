@@ -180,15 +180,13 @@ WorkerIO.port.addEventListener('message', function(eventM){
     if (event == 'new Message'){
         let msgTime = moment().format()
         if (data.success){
-            console.log(data)
-            let genMsg = { message: data.data.msg, sender:mainUser, timestamp: msgTime, read: false}
-            conversationList = renderConvoList(conversationList, currentChat.id, genMsg)
-            let newmessage = newSentMsg(genMsg)
+            let convo = singleConvo(currentChat.id, currentChat.participant, data.data.msg, false, mainUser, msgTime)
+            conversationList = conversationMerge(conversationList, [convo])
+            displayConvolist()
+            let newmessage = newSentMsg(convo.lastMessage)
             //append to chat box and scroll to location
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;
-            // render
-            displayConvolist()
         } else {
             // Error to show Unable to send
             console.log(`nothing`)
@@ -207,7 +205,6 @@ WorkerIO.port.addEventListener('error', function(e){
 // create classes for create message, create user
 
 let chatEvent = (chat) => {
-    let { id } = chat;
     return ()=>{
         if (currentChat.id != chat.id){
             setCurrentChat(chat);
