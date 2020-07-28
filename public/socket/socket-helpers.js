@@ -133,6 +133,7 @@ export const setUsersOffline = () => {
 
 // Toggle User Online/ Offline
 export const toggleUserStatus = (user, status) => {
+    console.log(document.getElementById(user))
     let userElem = document.getElementById(user).querySelectorAll('span')[0];
     if (userElem) {
         let currClass = userElem.getAttribute('class');

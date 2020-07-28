@@ -73,10 +73,7 @@ const displayConvolist = (firstload = false) => {
         let chat = {participant, id, lastMessage}
         contactWrapper.addEventListener('click',(chatEvent)(chat))
         usersElem.appendChild(contactWrapper)
-        if (index == 0){ indexChat = chat}
-        //     if (index == 0){
-        //         setCurrentChat(chat)
-        //     }
+        if (index == 0) indexChat = chat
     })
     if (! firstload) {
         loadConversation(currentChat)
@@ -86,10 +83,18 @@ const displayConvolist = (firstload = false) => {
     }
 }
 
+WorkerIO.port.addEventListener( 'beforeunload', function(){
+    port.postMessage( { event: 'shutdown', data: 'shutdown'} );
+});
 
 WorkerIO.port.addEventListener('message', function(eventM){
     console.log('OnMessage:', eventM.data);
     let { event, data } = eventM.data
+
+    if (event == 'totalconnections'){
+        console.log('total Connection is ')
+        console.log(data)
+    }
 
     if (event == 'new session'){
         mainUser = data
@@ -109,6 +114,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
     }
 
     if (event == 'getonlineUsers'){
+        if (!data) return
         data.forEach(onlineuser => {
             toggleUserStatus(onlineuser, true);
             return
@@ -256,8 +262,9 @@ const setReadChat = (id, convoList) => {
     return convoList;
 }
 
-const readMessageEmitter = (id) => {
+const readMessageEmitter = (cid) => {
     console.log('emitting sent message')
+    // WorkerIO.port.postMessage({ event: 'READRECIPIENT', data: cid })
 }
 
 const fetchMessages = (id, timestamp = null) => {

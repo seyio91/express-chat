@@ -8,8 +8,4 @@ if ('serviceWorker' in navigator){
     })
 }
 
-// if (typeof(window.SharedWorker) === 'undefined') {
-//     throw("Your browser does not support SharedWorkers")
-// }
-
 const WorkerIO = new SharedWorker('../js/shared_worker.js', 'NDN-Worker');

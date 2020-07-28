@@ -1,8 +1,14 @@
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js');
 
-const connections = [];
+let connections = [];
 var socket;
 let port = null;
+
+const sendAll = (event, data) => {
+    for (let i = 0; i < connections.length; i++ ){
+        connections[i].postMessage({event , data })
+    }
+} 
 
 self.addEventListener('connect', function(eventC){
     // new port
@@ -17,10 +23,15 @@ self.addEventListener('connect', function(eventC){
         socket = io();
     }
     
+    // port.postMessage({event:'totalconnections', connections})
 
     // Handling Emit New Sesion Event
     socket.emit('new session', (data)=>{
-        port.postMessage({event:'new session', data})
+        // port.postMessage({event:'new session', data })
+        // for (let i = 0; i < connections.length; i++ ){
+        //     connections[i].postMessage({event:'new session', data })
+        // }
+        sendAll('new session', data)
     })
     
     socket.on('connect', ()=> {
@@ -28,43 +39,64 @@ self.addEventListener('connect', function(eventC){
     })
 
     socket.on('receive Message', (data) => {
-        port.postMessage({ event: 'receive Message', data })
+        // port.postMessage({ event: 'receive Message', data })
+        sendAll('receive Message', data)
     })
 
     socket.on('userStateChange', (data) => {
-        port.postMessage({ event: 'userStateChange', data })
+        // port.postMessage({ event: 'userStateChange', data })
+        sendAll('userStateChange', data)
     })
 
     socket.on('disconnect', ()=> {
-        port.postMessage({ event: 'disconnect', data: '' })
+        // port.postMessage({ event: 'disconnect', data: '' })
+        sendAll('disconnect', '')
     })
     
 
-    // port.postMessage('from "clientPort":  with love :)');
+    port.postMessage(JSON.stringify(connections));
 
     port.addEventListener('message', function(eventM){
 
 
+
+
         let { event, data } = eventM.data;
+
+        if (event == 'shutdown'){
+            sendAll(event, data)
+        }
+
 
         if (event == 'getonlineUsers'){
             socket.emit(event, data => {
-                port.postMessage({ event, data })
+                // port.postMessage({ event, data })
+                sendAll(event, data)
             })
             // return
         }
 
         if (event == 'new Message'){
             socket.emit(event, data, (success)=>{
-                port.postMessage({event, data: { data, success }})
+                // port.postMessage({event, data: { data, success }})
+                sendAll(event, {data, success})
             })
         }
+
+        // if (event == 'READRECIPIENT'){
+        //     socket.emit(event, data)
+        // }
         
 
 
 
 
     }, false);
+    // port.addEventListener('unload', function(){
+
+    //             sendAll("ClosingWorker", "workerclosed")
+
+    // }, false);
 
     port.start();
 
