@@ -53,9 +53,6 @@ let newChatEvent = (userid) => {
     }
 }
 
-// import passport from 'passport';
-
-// const WorkerIO = new SharedWorker('shared_worker.js', 'NDN-Worker');
 let currentChat = null;
 let mainUser = null;
 let timerId = null;
@@ -92,37 +89,14 @@ WorkerIO.port.postMessage({ event: 'SWCONNECTED', data: tabId })
 
 window.addEventListener('beforeunload', ()=>{
     WorkerIO.port.postMessage({ event: 'SWDISCONNECT', data: tabId })
+    broadcastChannel.close()
 })
 
-WorkerIO.port.addEventListener('message', function(eventM){
-    console.log('OnMessage:', eventM.data);
-    let { event, data } = eventM.data
+broadcastChannel.addEventListener('message', bEvent => {
+    console.log('OnBroadCast:', bEvent.data);
+    let { event, data } = bEvent.data
 
-    if (event == 'new session'){
-        mainUser = data
-        // console.log('mainuser is: ',mainUser)
-        // make an ajax call to get list of all your users
-        toggleConnStatus(true)
-        fetch(`/conversations`)
-            .then(res => res.json())
-                .then(connectedUsers => {
-                    usersElem.innerHTML = "";
-                    if (!connectedUsers.length) return
-                    conversationList = connectedUsers.reverse();
-                    displayConvolist(true)
-                    getOnlineUsers()
-                })
-                return
-    }
-
-    if (event == 'getonlineUsers'){
-        if (!data) return
-        data.forEach(onlineuser => {
-            toggleUserStatus(onlineuser, true);
-            return
-        })
-    }
-
+    // New Connection
     if (event == 'connect'){
         if(timerId != null){
             clearTimeout(timerId)
@@ -156,31 +130,8 @@ WorkerIO.port.addEventListener('message', function(eventM){
         
         return
     }
-  
-  
-    if (event == 'receive Message'){
-        const { sender, cid, message, timestamp } = data;
-        let readvalue = false;
-        if (currentChat.id == cid){
-            readMessageEmitter()
-            readvalue = true
-            // emitread
-            // append to chat
-            let newmessage = newReceivedMsg(data)
-            chatBox.appendChild(newmessage)
-            chatBox.scrollTop = chatBox.scrollHeight;    
-        }
-        let convo = singleConvo(cid, mainUser, message, readvalue, sender, timestamp)
-        conversationList = conversationMerge(conversationList, [convo])
-        displayConvolist();
-        return
-    }
 
-    if (event == 'userStateChange'){
-        const {user, state} = data
-        toggleUserStatus(user, state)
-    }
-
+    // Disconnect
     if (event == 'disconnect'){
         timerId = setTimeout(() => {
             toggleConnStatus(false)
@@ -191,6 +142,33 @@ WorkerIO.port.addEventListener('message', function(eventM){
         }, 3000);
     }
 
+    // receive messages
+    if (event == 'receive Message'){
+        // issue with bold on currentuser
+        const { sender, cid, message, read, timestamp } = data;
+        if (currentChat.id == cid){
+            conversationList = setReadChat(cid, conversationList)
+            readMessageEmitter()
+            let newmessage = newReceivedMsg(data)
+            chatBox.appendChild(newmessage)
+            chatBox.scrollTop = chatBox.scrollHeight;    
+        }
+        
+        // let convo = singleConvo(cid, mainUser, message, readvalue, sender, timestamp)
+        let convo = singleConvo(cid, mainUser, message, read, sender, timestamp)
+        conversationList = conversationMerge(conversationList, [convo])
+        displayConvolist();
+        return
+    }
+
+    // Online Users State Change
+    if (event == 'userStateChange'){
+        const {user, state} = data
+        toggleUserStatus(user, state)
+    }
+
+
+    // New Message
     if (event == 'new Message'){
         let msgTime = moment().format()
         if (data.success){
@@ -205,6 +183,37 @@ WorkerIO.port.addEventListener('message', function(eventM){
             // Error to show Unable to send
             console.log(`nothing`)
         }
+    }
+
+})
+
+WorkerIO.port.addEventListener('message', function(eventM){
+    console.log('OnMessage:', eventM.data);
+    let { event, data } = eventM.data
+
+    if (event == 'NEWSESSION'){
+        mainUser = data
+        // console.log('mainuser is: ',mainUser)
+        // make an ajax call to get list of all your users
+        toggleConnStatus(true)
+        fetch(`/conversations`)
+            .then(res => res.json())
+                .then(connectedUsers => {
+                    usersElem.innerHTML = "";
+                    if (!connectedUsers.length) return
+                    conversationList = connectedUsers.reverse();
+                    displayConvolist(true)
+                    getOnlineUsers()
+                })
+                return
+    }
+
+    if (event == 'getonlineUsers'){
+        if (!data) return
+        data.forEach(onlineuser => {
+            toggleUserStatus(onlineuser, true);
+            return
+        })
     }
 
 });
@@ -234,6 +243,9 @@ const setCurrentChat = (chat) => {
     }
 
     currentChat = chat;
+
+    // inform sharedworker
+    // WorkerIO.port.postMessage
 
     //set new chat as selected
     loadConversation(currentChat)

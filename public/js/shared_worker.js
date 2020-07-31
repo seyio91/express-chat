@@ -1,58 +1,41 @@
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js');
 
 let connections = {};
-var socket;
+let socket;
 let port = null;
+let currentTabsUserList = {};
 
-const sendAll = (event, data) => {
-    for (ports in connections ){
-        connections[ports].postMessage({event , data })
-    }
-} 
+const broadcastChannel = new BroadcastChannel("WEBSOCKETCHANNEL");
 
-const broadcastChannel = new BroadcastChannel("")
+const broadCastEvent = (event, data) => {
+    broadcastChannel.postMessage({event, data})
+}
+
+if (!socket){
+    socket = io();
+}
+
+socket.on('connect', ()=> {
+    broadcastChannel.postMessage({ event: 'connect', data: ''})
+})
+
+socket.on('receive Message', (data) => {
+    broadCastEvent('receive Message', data)
+})
+
+socket.on('userStateChange', (data) => {
+    broadCastEvent('userStateChange', data)
+})
+
+socket.on('disconnect', ()=> {
+    broadCastEvent('disconnect', '')
+})
 
 self.addEventListener('connect', function(eventC){
-    // new port
     port = eventC.ports[0];
 
-    // Add Neew port to connections for this shared worker
+    // // Add New port to connections for this shared worker
     port.start()
-
-    //if there is no existing connection, start new socket
-    if (!socket){
-        socket = io();
-    }
-    
-    // port.postMessage({event:'totalconnections', connections})
-
-    // Handling Emit New Sesion Event
-    socket.emit('new session', (data)=>{
-        // port.postMessage({event:'new session', data })
-        // for (let i = 0; i < connections.length; i++ ){
-        //     connections[i].postMessage({event:'new session', data })
-        // }
-        sendAll('new session', data)
-    })
-    
-    socket.on('connect', ()=> {
-        port.postMessage({ event: 'connect', data: ''})
-    })
-
-    socket.on('receive Message', (data) => {
-        // port.postMessage({ event: 'receive Message', data })
-        sendAll('receive Message', data)
-    })
-
-    socket.on('userStateChange', (data) => {
-        // port.postMessage({ event: 'userStateChange', data })
-        sendAll('userStateChange', data)
-    })
-
-    socket.on('disconnect', ()=> {
-        // port.postMessage({ event: 'disconnect', data: '' })
-        sendAll('disconnect', '')
-    })
     
 
     port.postMessage(JSON.stringify(connections));
@@ -66,31 +49,32 @@ self.addEventListener('connect', function(eventC){
 
         if (event == 'SWCONNECTED'){
             connections[data] = port
-            // sendAll(event, JSON.stringify(data))
-            // sendAll(event, data)
             connections[data].postMessage({event , data })
+            connections[data].postMessage({event: 'CONNECTION_COUNT' , data: Object.keys(connections).length })
+            // Handling Connected Users
+            socket.emit('NEWSESSION', (result)=>{
+                connections[data].postMessage({event: 'NEWSESSION' , data: result })
+                
+            })
         }
 
+        // Disconnect Listening Port
         if (event == 'SWDISCONNECT'){
-            
             delete connections[data]
-            sendAll(event, JSON.stringify(connections))
-            // sendAll(event, data)
+            broadCastEvent(event='CONNECTION_COUNT', data=Object.keys(connections).length)
         }
 
-
+        // Get Online Users for Requesting Tab
         if (event == 'getonlineUsers'){
             socket.emit(event, (users) => {
-                // port.postMessage({ event, data })
                 connections[data].postMessage({event , data:users })
             })
-            // return
         }
 
+        // Handle New Messages
         if (event == 'new Message'){
             socket.emit(event, data, (success)=>{
-                // port.postMessage({event, data: { data, success }})
-                sendAll(event, {data, success})
+                broadCastEvent(event, {data, success})
             })
         }
 
@@ -103,12 +87,7 @@ self.addEventListener('connect', function(eventC){
 
 
     }, false);
-    // port.addEventListener('unload', function(){
 
-    //             sendAll("ClosingWorker", "workerclosed")
-
-    // }, false);
-
-    port.start();
+    // port.start();
 
 }, false);

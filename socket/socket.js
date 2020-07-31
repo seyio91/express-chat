@@ -52,7 +52,7 @@ socketconn.init = (server)=>{
         // })
     
         // everyone connecting should see all active users. all sockets
-        socket.on('new session', (callback)=>{
+        socket.on('NEWSESSION', (callback)=>{
             callback(userID)
         })
     

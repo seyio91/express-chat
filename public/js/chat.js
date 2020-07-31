@@ -9,3 +9,4 @@ if ('serviceWorker' in navigator){
 }
 
 const WorkerIO = new SharedWorker('../js/shared_worker.js', 'NDN-Worker');
+const broadcastChannel = new BroadcastChannel("WEBSOCKETCHANNEL")
