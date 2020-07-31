@@ -19,17 +19,6 @@ export const loadConversation = (userChat) => {
     newUser.setAttribute('class', `${newUserclass} bg-light`);
 }
 
-
-// If conversation thread is not opened
-// conversation is highlighted when a new message is received
-// This clears highlight when you click on the conversation
-// export const clearUnreadMessage = (user) => {
-//     let userdiv = document.getElementById(user);
-//     userdiv.className = userdiv.className.replace(' font-weight-bold' ,'');
-//     console.log('clear unread message')
-// }
-
-
 // Notify User for Unread Message
 export const notifyUnreadMsg = (user) => {
     const userElem = document.getElementById(user);
@@ -37,16 +26,6 @@ export const notifyUnreadMsg = (user) => {
         userElem.className += ' font-weight-bold';
     }
 }
-
-// //update User Chat
-// export const updateConvoList = (data, user) => {
-//     let { displayMessage, displayTime } = convoHelper(data, user)
-//     let lastMessage = document.getElementById(user).querySelectorAll('p')[0];
-//     let msgDate = document.getElementById(user).querySelectorAll('small')[0];
-//     // lastMessage.innerText = displayMessage
-//     lastMessage.innerHTML = displayMessage
-//     msgDate.innerText =   displayTime
-// }
 
 // Creates a Received Message
 export const newReceivedMsg = (messages) => {
@@ -133,7 +112,7 @@ export const setUsersOffline = () => {
 
 // Toggle User Online/ Offline
 export const toggleUserStatus = (user, status) => {
-    console.log(document.getElementById(user))
+    // console.log(document.getElementById(user))
     let userElem = document.getElementById(user).querySelectorAll('span')[0];
     if (userElem) {
         let currClass = userElem.getAttribute('class');
@@ -218,18 +197,6 @@ const convoHelper = (messages, user) => {
 }
 
 
-// export const renderConvoList = (convoList, id, message = null) => {
-//     let index = convoList.findIndex(convo => convo.id == id)
-//     convoList[index].lastMessage = message ? message : null;
-//     // convoList[index].lastMessage = message
-//     if (index != 0){
-//         let temp = convoList[index]
-//         convoList.splice(index, 1)
-//         convoList.unshift(temp)
-//     }
-//     return convoList
-// }
-
 export const newUserTab = (userObj) => {
     let contactWrapper = document.createElement('a');
     contactWrapper.innerHTML = `
@@ -249,6 +216,7 @@ export const newUserTab = (userObj) => {
     contactWrapper.setAttribute('id', `${userObj.email}`);
     return contactWrapper;
 }
+
 
 
 export const conversationMerge = (target, source) => {

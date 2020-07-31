@@ -26,7 +26,14 @@ router.get('/chat', userAuth, async(req, res) => {
 // get all user
 router.get('/userlist', userAuth, async(req, res) => {
     const userlist = await getData(`${keys.DBCONN}/users`)
-    res.json(userlist)
+    const results = userlist.map(a => {
+        let userObj = {};
+        userObj['name'] = `${a.first_name} ${a.last_name}`;
+        userObj['email'] = a.email;
+        return userObj;
+    })
+    
+    res.json(results)
 })
 
 // router.get('/currentchat/:cid', async(req, res)=>{

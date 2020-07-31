@@ -60,9 +60,10 @@ socketconn.init = (server)=>{
     
         socket.on('new Message', (data, callback) => {
             
-            const { cid, msg, recipient } = data
+            const { cid, msg, recipient, newchat } = data
 
             newmessage = createMessage(data, userID)
+            console.log('data before update')
             conversation = updateConversation(data, userID)
 
             // console.log('storing new message', newmessage)
@@ -70,10 +71,21 @@ socketconn.init = (server)=>{
             // send to save messsage
             // postData('http://localhost:3000/messages', newmessage)
             //     .then(()=> {
-            //         console.log("success creating new message")
-            //         updateData('http://localhost:3000/conversations', cid , conversation)
-            //             .then(()=> console.log('Success Creating Conversation'))
-            //     })
+            //         if (newchat){
+            //             // updating
+            //             postData('http://localhost:3000/conversations', conversation)
+            //                 .then(()=> {
+            //                     callback(true)
+            //                 })
+            //                 .catch(err => console.log(err))
+            //         } else {
+                        // updateData('http://localhost:3000/conversations', cid , conversation)
+                        // .then(()=> {
+                            // console.log('Success Updating Conversation');
+                            // callback(true)
+                        // })
+                //     }
+                // })
     
             // only true after saving the message
             callback(true)
@@ -182,8 +194,8 @@ function createMessage(data, userid){
 
 // create conversation
 function updateConversation(data, userid){
-    const { msg, recipient, timestamp, read } = data;
-    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp, read } }
+    const { msg, recipient, timestamp, cid } = data;
+    return {id: cid, uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp, read: false } }
 }
 
 module.exports = { sessionData, socketconn }
