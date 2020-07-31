@@ -89,6 +89,7 @@ WorkerIO.port.postMessage({ event: 'SWCONNECTED', data: tabId })
 
 window.addEventListener('beforeunload', ()=>{
     WorkerIO.port.postMessage({ event: 'SWDISCONNECT', data: tabId })
+    if (currentChat) WorkerIO.port.postMessage({event: 'REMOVECURRENTUSER', data: {cid: currentChat.id, tab: tabId } })
     broadcastChannel.close()
 })
 
@@ -97,7 +98,7 @@ broadcastChannel.addEventListener('message', bEvent => {
     let { event, data } = bEvent.data
 
     // New Connection
-    if (event == 'connect'){
+    if (event == 'WSCONNECTED'){
         if(timerId != null){
             clearTimeout(timerId)
             timerId = null
@@ -111,16 +112,13 @@ broadcastChannel.addEventListener('message', bEvent => {
             fetch(`/conversations/${lastOffline}`)
                 .then(res => res.json())
                     .then(updatedMessages=> {
-                        console.log(updatedMessages)
                         if(!updatedMessages.length) return
                         // render the whole list and display
                         conversationList = conversationMerge(conversationList, updatedMessages)
                         let messageIndex = updatedMessages.findIndex(conversation => currentChat.id == conversation.id)
                         if (messageIndex != -1){
-                            conversationList = setReadChat(currentChat.id, conversationList)
+                            setReadChat(currentChat.id)
                             fetchMessages(currentChat.id, lastOffline)
-                            // send read emitter
-                            readMessageEmitter()
                         }
                         displayConvolist()
                     })
@@ -132,7 +130,7 @@ broadcastChannel.addEventListener('message', bEvent => {
     }
 
     // Disconnect
-    if (event == 'disconnect'){
+    if (event == 'WSDISCONNECT'){
         timerId = setTimeout(() => {
             toggleConnStatus(false)
             setUsersOffline()
@@ -147,14 +145,11 @@ broadcastChannel.addEventListener('message', bEvent => {
         // issue with bold on currentuser
         const { sender, cid, message, read, timestamp } = data;
         if (currentChat.id == cid){
-            conversationList = setReadChat(cid, conversationList)
-            readMessageEmitter()
             let newmessage = newReceivedMsg(data)
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;    
         }
         
-        // let convo = singleConvo(cid, mainUser, message, readvalue, sender, timestamp)
         let convo = singleConvo(cid, mainUser, message, read, sender, timestamp)
         conversationList = conversationMerge(conversationList, [convo])
         displayConvolist();
@@ -185,6 +180,12 @@ broadcastChannel.addEventListener('message', bEvent => {
         }
     }
 
+    if (event == 'SETMSGASREAD'){
+        let messageIndex = conversationList.findIndex(conversation => data == conversation.id);
+        conversationList[messageIndex]['lastMessage']['read'] = true;
+        displayConvolist()
+    }
+
 })
 
 WorkerIO.port.addEventListener('message', function(eventM){
@@ -204,6 +205,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
                     conversationList = connectedUsers.reverse();
                     displayConvolist(true)
                     getOnlineUsers()
+                    
                 })
                 return
     }
@@ -245,7 +247,7 @@ const setCurrentChat = (chat) => {
     currentChat = chat;
 
     // inform sharedworker
-    // WorkerIO.port.postMessage
+    WorkerIO.port.postMessage({event: 'SETCURRENTUSER', data: {cid: currentChat.id, tab: tabId } })
 
     //set new chat as selected
     loadConversation(currentChat)
@@ -259,9 +261,7 @@ const setCurrentChat = (chat) => {
     // clear unread notification
     // set message as read in store using id and tell server i read all conversations
     if (lastMessage.sender == participant && !lastMessage.read ){
-        conversationList = setReadChat(id, conversationList)
-        readMessageEmitter(id)
-        displayConvolist()
+        setReadChat(id)
     }
     
     receiverElem.innerText = `Message: ${participant}`;
@@ -270,16 +270,9 @@ const setCurrentChat = (chat) => {
 
 }
 
-const setReadChat = (id, convoList) => {
+const setReadChat = (id) => {
     console.log('setting read chat in store')
-    let messageIndex = convoList.findIndex(conversation => id == conversation.id);
-    convoList[messageIndex]['lastMessage']['read'] = true;
-    return convoList;
-}
-
-const readMessageEmitter = (cid) => {
-    console.log('emitting sent message')
-    // WorkerIO.port.postMessage({ event: 'READRECIPIENT', data: cid })
+    WorkerIO.port.postMessage({event: 'MESSAGEREAD', data: id})
 }
 
 const fetchMessages = (id, timestamp = null) => {
@@ -298,7 +291,7 @@ const fetchMessages = (id, timestamp = null) => {
 
 
 const getOnlineUsers = () => {
-    WorkerIO.port.postMessage({ event: 'getonlineUsers', data: tabId })
+    WorkerIO.port.postMessage({ event: 'GETONLINEUSERS', data: tabId })
 }
 
 

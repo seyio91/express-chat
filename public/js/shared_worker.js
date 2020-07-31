@@ -16,10 +16,19 @@ if (!socket){
 }
 
 socket.on('connect', ()=> {
-    broadcastChannel.postMessage({ event: 'connect', data: ''})
+    broadcastChannel.postMessage({ event: 'WSCONNECTED', data: ''})
 })
 
 socket.on('receive Message', (data) => {
+    // Handling If CurrentUser is receiving Message
+    let uniqueCurrentUsers = Object.values(currentTabsUserList)
+    let {cid} = data
+    if (uniqueCurrentUsers.includes(cid)){
+        data['read'] = true
+        // update server
+        socket.emit('MESSAGEREAD', cid)
+    }
+    
     broadCastEvent('receive Message', data)
 })
 
@@ -28,7 +37,7 @@ socket.on('userStateChange', (data) => {
 })
 
 socket.on('disconnect', ()=> {
-    broadCastEvent('disconnect', '')
+    broadCastEvent('WSDISCONNECT', '')
 })
 
 self.addEventListener('connect', function(eventC){
@@ -45,6 +54,7 @@ self.addEventListener('connect', function(eventC){
 
         let { event, data } = eventM.data;
 
+        console.log(eventM.data)
 
 
         if (event == 'SWCONNECTED'){
@@ -65,7 +75,7 @@ self.addEventListener('connect', function(eventC){
         }
 
         // Get Online Users for Requesting Tab
-        if (event == 'getonlineUsers'){
+        if (event == 'GETONLINEUSERS'){
             socket.emit(event, (users) => {
                 connections[data].postMessage({event , data:users })
             })
@@ -78,12 +88,20 @@ self.addEventListener('connect', function(eventC){
             })
         }
 
-        // if (event == 'READRECIPIENT'){
-        //     socket.emit(event, data)
-        // }
-        
+        if (event == 'REMOVECURRENTUSER'){
+            let { tab } = data
+            delete currentTabsUserList[tab]
+        }
 
+        if (event == 'SETCURRENTUSER'){
+            let { cid, tab } = data
+            currentTabsUserList[tab] = cid
+        }
 
+        if (event == 'MESSAGEREAD'){
+            socket.emit('MESSAGEREAD', data)
+            broadCastEvent(event='SETMSGASREAD', data)
+        }
 
 
     }, false);

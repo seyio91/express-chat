@@ -89,9 +89,14 @@ socketconn.init = (server)=>{
         })
 
         //get online users
-        socket.on('getonlineUsers', (callback)=> {
+        socket.on('GETONLINEUSERS', (callback)=> {
+            console.log('online users called')
             callback(getOnlineUsers(userID, activeUsers))
-            console.log('i got called')
+            
+        })
+
+        socket.on('MESSAGEREAD', (data, callback)=>{
+            console.log('Update Message as read')
         })
     
         // disconnect
