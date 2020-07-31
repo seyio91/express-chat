@@ -88,10 +88,10 @@ socketconn.init = (server)=>{
     
         })
 
-
         //get online users
         socket.on('getonlineUsers', (callback)=> {
             callback(getOnlineUsers(userID, activeUsers))
+            console.log('i got called')
         })
     
         // disconnect

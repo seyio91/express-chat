@@ -61,6 +61,7 @@ let mainUser = null;
 let timerId = null;
 let lastOffline = null;
 let conversationList = [];
+const tabId = uuid.v4();
 
 
 const displayConvolist = (firstload = false) => {
@@ -83,18 +84,19 @@ const displayConvolist = (firstload = false) => {
     }
 }
 
-WorkerIO.port.addEventListener( 'beforeunload', function(){
-    port.postMessage( { event: 'shutdown', data: 'shutdown'} );
-});
+WorkerIO.port.postMessage({ event: 'SWCONNECTED', data: tabId })
+
+
+// setTimeout(() =>  WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: "Connected", sender: mainUser, recipient: currentChat.participant, timestamp: moment().format() } }), 2500);
+
+
+window.addEventListener('beforeunload', ()=>{
+    WorkerIO.port.postMessage({ event: 'SWDISCONNECT', data: tabId })
+})
 
 WorkerIO.port.addEventListener('message', function(eventM){
     console.log('OnMessage:', eventM.data);
     let { event, data } = eventM.data
-
-    if (event == 'totalconnections'){
-        console.log('total Connection is ')
-        console.log(data)
-    }
 
     if (event == 'new session'){
         mainUser = data
@@ -135,6 +137,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
             fetch(`/conversations/${lastOffline}`)
                 .then(res => res.json())
                     .then(updatedMessages=> {
+                        console.log(updatedMessages)
                         if(!updatedMessages.length) return
                         // render the whole list and display
                         conversationList = conversationMerge(conversationList, updatedMessages)
@@ -182,8 +185,8 @@ WorkerIO.port.addEventListener('message', function(eventM){
         timerId = setTimeout(() => {
             toggleConnStatus(false)
             setUsersOffline()
-            // lastOffline = moment().format()
-            lastOffline = "2020-04-02T08:12:03+08:00"
+            lastOffline = moment().format()
+            // lastOffline = "2020-04-02T08:12:03+08:00"
             // console.log('my last time offline in this session', lastOffline)
         }, 3000);
     }
@@ -283,7 +286,7 @@ const fetchMessages = (id, timestamp = null) => {
 
 
 const getOnlineUsers = () => {
-    WorkerIO.port.postMessage({ event: 'getonlineUsers', data: '' })
+    WorkerIO.port.postMessage({ event: 'getonlineUsers', data: tabId })
 }
 
 
@@ -305,3 +308,4 @@ messageForm.addEventListener('submit', (e)=>{
 })
 
 WorkerIO.port.start();
+

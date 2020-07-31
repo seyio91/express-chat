@@ -1,21 +1,22 @@
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js');
 
-let connections = [];
+let connections = {};
 var socket;
 let port = null;
 
 const sendAll = (event, data) => {
-    for (let i = 0; i < connections.length; i++ ){
-        connections[i].postMessage({event , data })
+    for (ports in connections ){
+        connections[ports].postMessage({event , data })
     }
 } 
+
+const broadcastChannel = new BroadcastChannel("")
 
 self.addEventListener('connect', function(eventC){
     // new port
     port = eventC.ports[0];
 
     // Add Neew port to connections for this shared worker
-    connections.push(port);
     port.start()
 
     //if there is no existing connection, start new socket
@@ -59,19 +60,29 @@ self.addEventListener('connect', function(eventC){
     port.addEventListener('message', function(eventM){
 
 
-
-
         let { event, data } = eventM.data;
 
-        if (event == 'shutdown'){
-            sendAll(event, data)
+
+
+        if (event == 'SWCONNECTED'){
+            connections[data] = port
+            // sendAll(event, JSON.stringify(data))
+            // sendAll(event, data)
+            connections[data].postMessage({event , data })
+        }
+
+        if (event == 'SWDISCONNECT'){
+            
+            delete connections[data]
+            sendAll(event, JSON.stringify(connections))
+            // sendAll(event, data)
         }
 
 
         if (event == 'getonlineUsers'){
-            socket.emit(event, data => {
+            socket.emit(event, (users) => {
                 // port.postMessage({ event, data })
-                sendAll(event, data)
+                connections[data].postMessage({event , data:users })
             })
             // return
         }
