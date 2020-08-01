@@ -92,7 +92,7 @@ const displayConvolist = (firstload = false) => {
         if (index == 0) indexChat = chat
     })
     if (! firstload) {
-        loadConversation(currentChat)
+        if (currentChat) loadConversation(currentChat)
     } else {
         // chat for first conversation
         setCurrentChat(indexChat)
@@ -120,11 +120,11 @@ broadcastChannel.addEventListener('message', bEvent => {
         if(timerId != null){
             clearTimeout(timerId)
             timerId = null
-            toggleConnStatus(true)
     
             // Check If user was offline or just a page refresh
             // return if offline is less than one second
             if (lastOffline == null) return
+            toggleConnStatus(true)
  
             // Return Messages after last time offline
             fetch(`/conversations/${lastOffline}`)
@@ -160,7 +160,7 @@ broadcastChannel.addEventListener('message', bEvent => {
     if (event == 'receive Message'){
         // issue with bold on currentuser
         const { sender, cid, message, read, timestamp } = data;
-        if (currentChat.id == cid){
+        if (currentChat && currentChat.id == cid){
             let newmessage = newReceivedMsg(data)
             chatBox.appendChild(newmessage)
             chatBox.scrollTop = chatBox.scrollHeight;    

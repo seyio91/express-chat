@@ -45,8 +45,8 @@ self.addEventListener('connect', function(eventC){
 
     // // Add New port to connections for this shared worker
     port.start()
-    
-
+   
+ 
     port.postMessage(JSON.stringify(connections));
 
     port.addEventListener('message', function(eventM){
