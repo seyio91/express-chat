@@ -19,13 +19,6 @@ export const loadConversation = (userChat) => {
     newUser.setAttribute('class', `${newUserclass} bg-light`);
 }
 
-// Notify User for Unread Message
-export const notifyUnreadMsg = (user) => {
-    const userElem = document.getElementById(user);
-    if (userElem){
-        userElem.className += ' font-weight-bold';
-    }
-}
 
 // Creates a Received Message
 export const newReceivedMsg = (messages) => {
@@ -117,12 +110,11 @@ export const toggleUserStatus = (user, status) => {
     if (userElem) {
         let currClass = userElem.getAttribute('class');
         if (status){
-            currClass = currClass.replace(' offline-user', '')
-            userElem.setAttribute('class', `${currClass} online-user`)
+            currClass = currClass.includes('offline-user') ? currClass.replace('offline-user', 'online-user') : currClass
         } else {
-            currClass = currClass.replace(' online-user', '')
-            userElem.setAttribute('class', `${currClass} offline-user`)
+            currClass = currClass.includes('online-user') ? currClass.replace('online-user', 'offline-user'): currClass
         }
+        userElem.setAttribute('class', currClass)
 
     }
 }
@@ -134,14 +126,18 @@ export const toggleConnStatus = (status) => {
 
     let conClass = connector.getAttribute('class');
     if (status){
-        conClass = conClass.replace(' offline-user', '');
-        connector.setAttribute('class', `${conClass} online-user`);
-        userStatus.innerText = "Online"
+        if (conClass.includes('offline-user')){
+            conClass = conClass.replace('offline-user', 'online-user');
+            userStatus.innerText = "Online"
+        }
+        return
     } else {
-        conClass = conClass.replace(' online-user', '');
-        connector.setAttribute('class', `${conClass} offline-user`);
-        userStatus.innerText = "Offline"
+        if (conClass.includes('online-user')){
+            conClass = conClass.replace('online-user', 'offline-user');
+            userStatus.innerText = "Offline"
+        }
     }
+    connector.setAttribute('class', conClass);
 }
 
 

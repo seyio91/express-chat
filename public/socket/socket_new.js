@@ -7,7 +7,7 @@ const newchat = document.getElementById('newchat');
 const newchatlist = document.querySelector('.side-two');
 const returnchat = document.getElementById('returnchat');
 import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
-        removePrevConvo, loadConversation,notifyUnreadMsg, toggleConnStatus,
+        removePrevConvo, loadConversation, toggleConnStatus,
         setUsersOffline, newUserTab,conversationMerge, singleConvo } from './socket-helpers.js'
 
 
@@ -64,15 +64,11 @@ let newChatEvent = (userid) => {
         if (index != -1){
             userChat = conversationList[index]
             let chatItem = {id: userChat.id, participant: userid.email, lastMessage: userChat.lastMessage, newchat: false}
-            if (currentChat.id != userChat.id){
-                setCurrentChat(chatItem);
-            }
-            
+            if (currentChat.id != userChat.id) setCurrentChat(chatItem);
         } else {
             newCurrentChat({ id: uuid.v4(),participant: userid.email, newchat: true })
         }
         drawBackNew() 
-        // console.log(userid, index)
     }
 }
 

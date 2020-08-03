@@ -9,6 +9,22 @@
       "id": 2
     },
     {
+      "first_name": "Obaweya",
+      "last_name": "Siji",
+      "username": "siji",
+      "email": "sijex92@yahoo.com",
+      "password": "$2a$10$dONgPNxxSV2paLCBqeBnrOedT/El7NKP8e.eOnZZRWASOmgBfVWUW",
+      "id": 5
+    },
+    {
+      "first_name": "Obaweya",
+      "last_name": "Tope",
+      "username": "tope",
+      "email": "top4day@yahoo.com",
+      "password": "$2a$10$dONgPNxxSV2paLCBqeBnrOedT/El7NKP8e.eOnZZRWASOmgBfVWUW",
+      "id": 6
+    },
+    {
       "first_name": "seyio",
       "last_name": "obaweya",
       "username": "seyio",
@@ -31,56 +47,96 @@
       "message": "Hi Buti",
       "sender": "seyi@yahoo.com",
       "cid": "randomIDfornow",
-      "timestamp": "2020-03-26T08:12:03+08:00"
+      "timestamp": "2020-03-26T08:12:03+08:00",
+      "read": true
     },
     {
       "id": "somerandomuid2",
       "message": "Hi Reply",
       "sender": "mary@yahoo.com",
       "cid": "randomIDfornow",
-      "timestamp": "2020-03-27T09:12:04+08:00"
+      "timestamp": "2020-03-27T09:12:04+08:00",
+      "read": true
     },
     {
       "id": "somerandomuid3",
       "message": "Hi Global",
       "sender": "seyi@yahoo.com",
       "cid": "secondrandomchat",
-      "timestamp": "2020-03-28T10:12:05+08:00"
+      "timestamp": "2020-03-28T10:12:05+08:00",
+      "read": true
     },
     {
       "id": "somerandomuid3",
       "message": "Yo seyi",
       "sender": "seyi@global.com",
       "cid": "secondrandomchat",
-      "timestamp": "2020-03-29T11:12:06+08:00"
+      "timestamp": "2020-03-29T11:12:06+08:00",
+      "read": true
     },
     {
       "id": "somerandomuid4",
       "message": "Other reply",
       "sender": "seyi@yahoo.com",
       "cid": "randomIDfornow",
-      "timestamp": "2020-03-30T08:12:07+08:00"
+      "timestamp": "2020-03-30T08:12:07+08:00",
+      "read": true
     },
     {
       "id": "1009",
       "message": "hi",
       "sender": "seyi@yahoo.com",
       "cid": "secondrandomchat",
-      "timestamp": "2020-04-01T08:12:08+08:00"
+      "timestamp": "2020-04-01T08:12:08+08:00",
+      "read": true
     },
     {
       "id": "5c0586ac-3f72-4c58-8b13-995f89cdf434",
       "message": "hi",
       "sender": "seyi@yahoo.com",
       "cid": "randomIDfornow",
-      "timestamp": "2020-04-02T08:12:09+08:00"
+      "timestamp": "2020-04-02T08:12:09+08:00",
+      "read": true
     },
     {
       "id": "696a5e11-036c-43e5-85bd-0ff8b5c57ce2",
       "message": "Test Message to seyi",
       "sender": "seyi@global.com",
       "cid": "secondrandomchat",
-      "timestamp": "2020-04-03T08:12:10+08:00"
+      "timestamp": "2020-04-03T08:12:10+08:00",
+      "read": true
+    },
+    {
+      "id": "77cf95b3-323f-418d-8b8d-4ea2ef066b1b",
+      "message": "Hello",
+      "sender": "seyi@yahoo.com",
+      "cid": "c5bad289-9832-4743-a5f1-f6819a00ba68",
+      "timestamp": "2020-08-01T06:11:33+08:00",
+      "read": false
+    },
+    {
+      "id": "35fc2abd-f7b2-432e-9c26-b69493283cc1",
+      "message": "adsdsdsads",
+      "sender": "seyi@yahoo.com",
+      "cid": "0269bb52-701d-4f1f-8858-a74a49a6d647",
+      "timestamp": "2020-08-01T06:15:36+08:00",
+      "read": false
+    },
+    {
+      "id": "1ed14549-3022-4ae7-b247-d7c5b452c980",
+      "message": "asdsdasasdasda",
+      "sender": "seyi@yahoo.com",
+      "cid": "4f25539d-1bae-471d-9cc6-121dca5a7ee7",
+      "timestamp": "2020-08-01T06:26:38+08:00",
+      "read": false
+    },
+    {
+      "id": "16f7abb0-f03c-4c0f-af3e-70a82b33b09d",
+      "message": "Test Convo",
+      "sender": "seyi@yahoo.com",
+      "cid": "53cd0790-adf2-45db-bd83-701f26b2becc",
+      "timestamp": "2020-08-01T06:27:40+08:00",
+      "read": false
     }
   ],
   "conversations": [
@@ -89,8 +145,9 @@
       "uid2": "mary@yahoo.com",
       "lastMessage": {
         "message": "hi",
-        "sender": "seyi@global.com",
-		"timestamp": "2020-04-03T07:07:03+08:00"
+        "sender": "mary@yahoo.com",
+        "timestamp": "2020-04-03T07:07:03+08:00",
+        "read": false
       },
       "id": "randomIDfornow"
     },
@@ -98,13 +155,13 @@
       "uid1": "seyi@yahoo.com",
       "uid2": "seyi@global.com",
       "lastMessage": {
-        "message": "hi",
+        "message": "Test Message",
         "sender": "seyi@yahoo.com",
-		"timestamp": "2020-04-01T08:12:03+08:00"
+        "timestamp": "2020-08-01T06:17:00+08:00",
+        "read": true
       },
       "id": "secondrandomchat"
     }
-	
   ],
   "blog_posts": [
     {
