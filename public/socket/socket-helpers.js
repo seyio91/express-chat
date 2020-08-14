@@ -62,14 +62,15 @@ export const newSentMsg = (messages) => {
 }
 
 // Create User Conversations
-export const getUserTab = (messages, user) => {
+export const getUserTab = (messages, user, status) => {
     let { displayMessage, displayTime } = convoHelper(messages, user)
     let contactWrapper = document.createElement('a');
+    let onlineStatus = status ? 'online-user' : 'offline-user'
     contactWrapper.innerHTML = `
             <div class="media">
                 <div class="userbox">
                     <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
-                    <span class="p-status offline-user"></span>
+                    <span class="p-status ${onlineStatus}"></span>
                 </div>
         
                 <div class="media-body ml-4">
@@ -130,7 +131,6 @@ export const toggleConnStatus = (status) => {
             conClass = conClass.replace('offline-user', 'online-user');
             userStatus.innerText = "Online"
         }
-        return
     } else {
         if (conClass.includes('online-user')){
             conClass = conClass.replace('online-user', 'offline-user');
@@ -218,18 +218,25 @@ export const newUserTab = (userObj) => {
 export const conversationMerge = (target, source) => {
     source.forEach(sourceElem => {
 		let index = target.findIndex(convo => convo.id == sourceElem.id)
-		if (index != -1) target.splice(index, 1);
+		if (index != -1){
+            let targetElem = target[index]
+            target.splice(index, 1);
+            sourceElem = { ...targetElem, ...sourceElem}
+            console.log('source element')
+            console.log(sourceElem)
+        }
 		target.unshift(sourceElem);
     })
     return target;
 }
 
 
-export const singleConvo = (cid, uid1, msg, read, sender, timestamp) => {
+export const singleConvo = (cid, participant, msg, read, sender, timestamp) => {
     return {
         id: cid,
-        uid1,
-        uid2: sender,
+        participant,
+        newchat: false,
+        status: true,
         lastMessage: {
             message: msg,
             read,

@@ -13,13 +13,14 @@ const broadCastEvent = (event, data) => {
 
 if (!socket){
     socket = io();
+    // socket = io({ "polling duration": 2 });
 }
 
 socket.on('connect', ()=> {
     broadcastChannel.postMessage({ event: 'WSCONNECTED', data: ''})
 })
 
-socket.on('receive Message', (data) => {
+socket.on('RECEIVE_MESSAGE', (data) => {
     // Handling If CurrentUser is receiving Message
     let uniqueCurrentUsers = Object.values(currentTabsUserList)
     let {cid} = data
@@ -29,16 +30,25 @@ socket.on('receive Message', (data) => {
         socket.emit('MESSAGEREAD', cid)
     }
     
-    broadCastEvent('receive Message', data)
+    broadCastEvent('RECEIVE_MESSAGE', data)
 })
 
 socket.on('userStateChange', (data) => {
     broadCastEvent('userStateChange', data)
 })
 
-socket.on('disconnect', ()=> {
+socket.on('disconnect', (reason)=> {
+    console.log(reason)
+    if (reason == 'io server disconnect') {
+        socket.close()
+    }
     broadCastEvent('WSDISCONNECT', '')
 })
+
+socket.on('packet',(packet)=>{
+    console.log(packet)
+})
+
 
 self.addEventListener('connect', function(eventC){
     port = eventC.ports[0];
@@ -81,8 +91,8 @@ self.addEventListener('connect', function(eventC){
             })
         }
 
-        // Handle New Messages
-        if (event == 'new Message'){
+        // Handle NEWMESSAGEs
+        if (event == 'NEWMESSAGE'){
             socket.emit(event, data, (success)=>{
                 broadCastEvent(event, {data, success})
             })

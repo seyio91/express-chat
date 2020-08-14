@@ -4,9 +4,16 @@ var SQLiteStore = require('connect-sqlite3')(session);
 const cookieParser = require('cookie-parser')
 const passportSocketIo = require("passport.socketio");
 const { postData, updateData } = require('../helpers/jsquery')
-const uuid = require('uuid')
+const socketHelpers = require('./helpers')
+const adapter = require('socket.io-redis');
+const moment = require('moment')
+const redisAdapter = adapter({
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379
+  });
 
 const sessionStore = new SQLiteStore()
+const client = require('../connections/redis');
 
 const sessionData = {
     store: sessionStore,
@@ -18,53 +25,76 @@ const sessionData = {
 
 socketconn.init = (server)=>{
     const socketio = require('socket.io')
-    const io = socketio(server);
+    const io = socketio(server, {
+        pingInterval: 60000
+    });
+    io.adapter(redisAdapter);
     
     sessionData.cookieParser = cookieParser;
     io.use(passportSocketIo.authorize(sessionData));
 
     activeUsers = {}
-    messageArray = []
-    messageid = 1009
 
-    io.on('connection', socket =>{
+    io.on('connection', async socket =>{
     // io.on('changeafter', socket =>{
         console.log(`New Connection ${socket.id}`)
     
         const userID = socket.request.user.email
 
-        if (isActiveUser(userID, activeUsers)){
+        // console.log(socket.connected)
+        // save socket
+        // canConnect = await client.set(userID, socket.id, 'NX', 'EX', 30)
+        // console.log(`User can connect ${canConnect}`)
+        // if (!canConnect){
+        //     console.log('i be disconnecting you')
+        //     socket.emit('closing', 'Close Socket')
+        //     socket.disconnect(true)
+        // }
 
-            activeUsers = updateUserSession(userID, socket.id, activeUsers)
+        if (socketHelpers.isActiveUser(userID, activeUsers)){
+
+            activeUsers = socketHelpers.updateUserSession(userID, socket.id, activeUsers)
+
+            // check if sessions exist in redis
+            // client.hsetnx(userID,'socket', socket.id,'time', JSON.stringify(date()))
+
+            // return and update
+
+            // save session
 
         } else {
 
             // Create New User Session
-            activeUsers = addUserSession(userID, socket.id, activeUsers)
-            // socket.broadcast.emit('onlineuser',  `${userID} is now online`)
+            activeUsers = socketHelpers.addUserSession(userID, socket.id, activeUsers)
             socket.broadcast.emit('userStateChange', {user: userID, state: true})
+
+            // client.HSETNX(userID,'socket', socket.id,'time', new Date())
+            // client.HSETNX
             // tell everyone my state has changed
+
+            // create new redis entry
         }
     
-        // socket.on('test', (data, callback)=>{
-
-        //     callback(getOnlineUsers(userID, activeUsers))
-        // })
-    
-        // everyone connecting should see all active users. all sockets
+        // return user to socket
         socket.on('NEWSESSION', (callback)=>{
             callback(userID)
         })
+
+        socket.conn.on('packet', async (packet)=>{
+            let { type } = packet
+            if (type == 'ping' ){
+                console.log(`keep alive for ${socket.id}`)
+                await client.set(userID, socket.id, 'XX', 'EX', 1)
+                await client.hmset(`${userID}-details`, 'time', moment().format(), 'server', 1)
+            }
+        })
     
-        // console.log(activeUsers)
-    
-        socket.on('new Message', (data, callback) => {
+        socket.on('NEWMESSAGE', async   (data, callback) => {
             
             const { cid, msg, recipient, newchat } = data
 
-            newmessage = createMessage(data, userID)
-            console.log('data before update')
-            conversation = updateConversation(data, userID)
+            newmessage = socketHelpers.createMessage(data, userID)
+            conversation = socketHelpers.updateConversation(data, userID)
 
             // console.log('storing new message', newmessage)
 
@@ -90,37 +120,45 @@ socketconn.init = (server)=>{
             // only true after saving the message
             callback(true)
 
-            // console.log('receipient available: ', sendSockets)
-            sendSockets = getUserSession(recipient, activeUsers)
+            sendSockets = await socketHelpers.getUserSession(recipient)
+
             if (!sendSockets) return
-            sendSockets.forEach(socketid => {
-                // to fix send whole message back
-                io.to(`${socketid}`).emit('receive Message', newmessage);
-            })
-    
+            
+            // to fix send whole message back
+            // This should publish through redis
+            io.to(`${sendSockets}`).emit('RECEIVE_MESSAGE', newmessage);
+     
         })
 
         //get online users
         socket.on('GETONLINEUSERS', (callback)=> {
             console.log('online users called')
-            callback(getOnlineUsers(userID, activeUsers))
+            callback(socketHelpers.getOnlineUsers(userID, activeUsers))
             
         })
 
         socket.on('MESSAGEREAD', (data, callback)=>{
-            console.log('Update Message as read')
+            console.log(`Update Message as read: ${data}`)
+            // PUT not updating
+            // body = {lastMessage: {
+            //     read: true
+            // }}
+            // updateData('http://localhost:3000/conversations', data , body)
+            //     .then(console.log('done'))
         })
     
         // disconnect
-        socket.on('disconnect', ()=>{
+        socket.on('disconnect', async ()=>{
+            // get session from redis
+            console.log(`disconnected called for ${socket.id}`)
+            await client.del(userID)
             if (activeUsers[userID]){
             // check number of connections left
                 if (activeUsers[userID].length > 1){
-                    activeUsers = removeSession(userID, socket.id , activeUsers);
+                    activeUsers = socketHelpers.removeSession(userID, socket.id , activeUsers);
                 } else {
                     //if last socket, set to offline
                     delete activeUsers[userID]
-                    // io.emit('userStateChange', {user: userID, state: false})
                     socket.broadcast.emit('userStateChange', {user: userID, state: false})
                 }
             }
@@ -130,72 +168,21 @@ socketconn.init = (server)=>{
         console.log(activeUsers)
     })
 
+    io.use(async (socket, next)=>{
+        let user = socket.request.user.email
+        // canConnect = await client.set(user, socket.id, 'NX', 'EX', 30)
+        canConnect = await client.set(user, socket.id)
+        console.log(`User can connect ${canConnect}`)
+        if (!canConnect){
+            console.log(`Closing Socket: ${socket.id}`)
+            socket.disconnect()
+            return
+        }
+        await client.hmset(`${user}-details`, 'time', moment().format(), 'server', 1)
+        next()
+    })
+ 
 }
 
-// userexists function
-function isActiveUser(user, userList){
-    return user in userList;
-}
-
-// add user to session
-function addUserSession(user, session ,userList){
-    userList[user] = [session];
-    return userList;
-}
-
-// add user session
-function updateUserSession(user, session ,userList){
-    userList[user].push(session);
-    return userList
-}
-
-
-
-//get other users
-function getOnlineUsers(user, userList){
-    return Object.keys(userList).filter(userCur=> userCur != user)
-}
-
-//get user session
-function getUserSession(user, userList){
-    return userList[user]
-}
-
-//remove user session. can use the get session also
-function removeSession(user, session ,userList){
-    userList[user] = userList[user].filter( id=> session != id);
-    return userList
-}
-
-//removeuser or offline
-function userOffline(user, userList){
-    delete userList[user];
-    return userList
-}
-
-function getTime(){
-    // current timestamp in milliseconds
-    let ts = Date.now();
-
-    let date_ob = new Date(ts);
-    let date = date_ob.getDate();
-    let month = date_ob.getMonth() + 1;
-    let year = date_ob.getFullYear();
-
-    // prints date & time in YYYY-MM-DD format
-    return year + "-" + month + "-" + date;
-}
-
-// Helper to create message
-function createMessage(data, userid){
-    const { cid, msg, timestamp } = data
-    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp, read: false }
-}
-
-// create conversation
-function updateConversation(data, userid){
-    const { msg, recipient, timestamp, cid } = data;
-    return {id: cid, uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp, read: false } }
-}
 
 module.exports = { sessionData, socketconn }

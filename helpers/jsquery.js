@@ -49,7 +49,8 @@ const postData = async (url, data) => {
 const updateData = async (url, id ,data) => {
     // console.log(`performing put request to ${url}/${id}`)
     const response = await fetch(`${url}/${id}`, {
-        method : 'PUT',
+        // method : 'PUT',
+        method : 'PATCH',
         headers : {
             'Content-type': 'application/json'
         },

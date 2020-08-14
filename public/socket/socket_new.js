@@ -19,6 +19,20 @@ let conversationList = [];
 const tabId = uuid.v4();
 
 
+const createConversationList = (conversation) => {
+    return conversation.map(convo => {
+        let { uid1, uid2, id, lastMessage } = convo;
+        let participant = mainUser == uid1 ? uid2 : uid1;
+        return {
+            id,
+            status: false,
+            newchat: false,
+            participant,
+            lastMessage
+        }
+    })
+}
+
 // return
 newchat.addEventListener('click', (event)=>{
     newchatlist.style.left = '0';
@@ -79,13 +93,11 @@ const displayConvolist = (firstload = false) => {
     usersElem.innerHTML = "";
     let indexChat = null
     conversationList.forEach((user, index) => {
-        let { uid1, uid2, id, lastMessage } = user;
-        let participant = mainUser == uid1 ? uid2 : uid1;
-        let contactWrapper = getUserTab(lastMessage, participant)
-        let chat = {participant, id, lastMessage, newchat: false}
-        contactWrapper.addEventListener('click',(chatEvent)(chat))
+        let { participant, status, lastMessage } = user;
+        let contactWrapper = getUserTab(lastMessage, participant, status)
+        contactWrapper.addEventListener('click',(chatEvent)(user))
         usersElem.appendChild(contactWrapper)
-        if (index == 0) indexChat = chat
+        if (index == 0) indexChat = user
     })
     if (! firstload) {
         if (currentChat) loadConversation(currentChat)
@@ -96,9 +108,6 @@ const displayConvolist = (firstload = false) => {
 }
 
 WorkerIO.port.postMessage({ event: 'SWCONNECTED', data: tabId })
-
-
-// setTimeout(() =>  WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: "Connected", sender: mainUser, recipient: currentChat.participant, timestamp: moment().format() } }), 2500);
 
 
 window.addEventListener('beforeunload', ()=>{
@@ -128,7 +137,8 @@ broadcastChannel.addEventListener('message', bEvent => {
                     .then(updatedMessages=> {
                         if(!updatedMessages.length) return
                         // render the whole list and display
-                        conversationList = conversationMerge(conversationList, updatedMessages)
+                        let updatedConvo = createConversationList(connectedUsers);
+                        conversationList = conversationMerge(conversationList, updatedConvo)
                         let messageIndex = updatedMessages.findIndex(conversation => currentChat.id == conversation.id)
                         if (messageIndex != -1){
                             setReadChat(currentChat.id)
@@ -152,8 +162,8 @@ broadcastChannel.addEventListener('message', bEvent => {
         }, 3000);
     }
 
-    // receive messages
-    if (event == 'receive Message'){
+    // RECEIVE_MESSAGES
+    if (event == 'RECEIVE_MESSAGE'){
         // issue with bold on currentuser
         const { sender, cid, message, read, timestamp } = data;
         if (currentChat && currentChat.id == cid){
@@ -162,8 +172,12 @@ broadcastChannel.addEventListener('message', bEvent => {
             chatBox.scrollTop = chatBox.scrollHeight;    
         }
         
-        let convo = singleConvo(cid, mainUser, message, read, sender, timestamp)
+        let convo = singleConvo(cid, sender, message, read, sender, timestamp)
+        console.log('convo before message')
+        console.log(conversationList)
         conversationList = conversationMerge(conversationList, [convo])
+        console.log('convo After message')
+        console.log(conversationList)
         displayConvolist();
         return
     }
@@ -175,18 +189,19 @@ broadcastChannel.addEventListener('message', bEvent => {
     }
 
 
-    // New Message
-    if (event == 'new Message'){
+    // NEWMESSAGE
+    if (event == 'NEWMESSAGE'){
         if (data.success){
-            // singleConvo(data.data.cid, data.data.recipient,data.data.msg, false, mainUser, data.data.timestamp)
-            let convo = singleConvo(data.data.cid, data.data.recipient,data.data.msg, false, mainUser, data.data.timestamp)
-            conversationList = conversationMerge(conversationList, [convo])
+            let { msg, timestamp } = data.data
+            currentChat.lastMessage = { message: msg, read: false, sender:mainUser, timestamp }
+            conversationList = conversationMerge(conversationList, [currentChat])
             displayConvolist()
             if (currentChat.id == data.data.cid){
-                let newmessage = newSentMsg(convo.lastMessage)
+                let newmessage = newSentMsg(currentChat.lastMessage)
                 chatBox.appendChild(newmessage)
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
+            console.log(conversationList)
         } else {
             // Error to show Unable to send
             console.log(`nothing`)
@@ -214,7 +229,7 @@ WorkerIO.port.addEventListener('message', function(eventM){
                 .then(connectedUsers => {
                     usersElem.innerHTML = "";
                     if (!connectedUsers.length) return
-                    conversationList = connectedUsers.reverse();
+                    conversationList = createConversationList(connectedUsers).reverse();
                     displayConvolist(true)
                     getOnlineUsers()
                     
@@ -241,6 +256,7 @@ WorkerIO.port.addEventListener('error', function(e){
 
 let chatEvent = (chat) => {
     return ()=>{
+        console.log(chat)
         if (currentChat.id != chat.id){
             setCurrentChat(chat);
         }
@@ -331,7 +347,7 @@ messageForm.addEventListener('submit', (e)=>{
     let msgTime = moment().format();
 
     //emit message to user
-    WorkerIO.port.postMessage({ event: 'new Message', data: { cid: currentChat.id, msg: msg, sender: mainUser, recipient: currentChat.participant, timestamp: msgTime, newchat:currentChat.newchat } })
+    WorkerIO.port.postMessage({ event: 'NEWMESSAGE', data: { cid: currentChat.id, msg: msg, sender: mainUser, recipient: currentChat.participant, timestamp: msgTime, newchat:currentChat.newchat } })
 
     e.target.elements[0].value = '';
     e.target.elements[0].focus();
