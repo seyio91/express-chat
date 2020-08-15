@@ -26,7 +26,7 @@ const sessionData = {
 socketconn.init = (server)=>{
     const socketio = require('socket.io')
     const io = socketio(server, {
-        pingInterval: 60000
+        pingInterval: 30000
     });
     io.adapter(redisAdapter);
     
@@ -66,7 +66,7 @@ socketconn.init = (server)=>{
 
             // Create New User Session
             activeUsers = socketHelpers.addUserSession(userID, socket.id, activeUsers)
-            socket.broadcast.emit('userStateChange', {user: userID, state: true})
+            // socket.broadcast.emit('userStateChange', {user: userID, state: true})
 
             // client.HSETNX(userID,'socket', socket.id,'time', new Date())
             // client.HSETNX
@@ -84,7 +84,7 @@ socketconn.init = (server)=>{
             let { type } = packet
             if (type == 'ping' ){
                 console.log(`keep alive for ${socket.id}`)
-                await client.set(userID, socket.id, 'XX', 'EX', 1)
+                await client.set(userID, socket.id, 'XX', 'EX', 20)
                 await client.hmset(`${userID}-details`, 'time', moment().format(), 'server', 1)
             }
         })
@@ -131,10 +131,11 @@ socketconn.init = (server)=>{
         })
 
         //get online users
-        socket.on('GETONLINEUSERS', (callback)=> {
+        socket.on('GETONLINEUSER', async (data, callback)=> {
             console.log('online users called')
-            callback(socketHelpers.getOnlineUsers(userID, activeUsers))
-            
+            let timestamp = await client.hget(`${data}-details`, 'time')
+            console.log(timestamp)
+            callback(timestamp)
         })
 
         socket.on('MESSAGEREAD', (data, callback)=>{
@@ -159,7 +160,7 @@ socketconn.init = (server)=>{
                 } else {
                     //if last socket, set to offline
                     delete activeUsers[userID]
-                    socket.broadcast.emit('userStateChange', {user: userID, state: false})
+                    // socket.broadcast.emit('userStateChange', {user: userID, state: false})
                 }
             }
             

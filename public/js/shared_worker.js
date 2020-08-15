@@ -85,9 +85,10 @@ self.addEventListener('connect', function(eventC){
         }
 
         // Get Online Users for Requesting Tab
-        if (event == 'GETONLINEUSERS'){
-            socket.emit(event, (users) => {
-                connections[data].postMessage({event , data:users })
+        if (event == 'GETONLINEUSER'){
+            let { tabId, participant } = data;
+            socket.emit(event, participant, (status) => {
+                connections[tabId].postMessage({event , data:status })
             })
         }
 

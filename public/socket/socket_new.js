@@ -17,6 +17,7 @@ let timerId = null;
 let lastOffline = null;
 let conversationList = [];
 const tabId = uuid.v4();
+let timerInterval = null
 
 
 const createConversationList = (conversation) => {
@@ -146,7 +147,6 @@ broadcastChannel.addEventListener('message', bEvent => {
                         }
                         displayConvolist()
                     })
-                    if (currentChat) getOnlineUsers()
             lastOffline = null
         }
         
@@ -231,18 +231,23 @@ WorkerIO.port.addEventListener('message', function(eventM){
                     if (!connectedUsers.length) return
                     conversationList = createConversationList(connectedUsers).reverse();
                     displayConvolist(true)
-                    getOnlineUsers()
                     
                 })
                 return
     }
 
-    if (event == 'getonlineUsers'){
-        if (!data) return
-        data.forEach(onlineuser => {
-            toggleUserStatus(onlineuser, true);
-            return
-        })
+    if (event == 'GETONLINEUSER'){
+        if (!data) {
+            // do something with false
+            document.getElementById('user-status').innerText = 'Status: Offline'
+        } else {
+            // do something with true
+            document.getElementById('user-status').innerText = 'Status: Online'
+        }
+        // data.forEach(onlineuser => {
+        //     toggleUserStatus(onlineuser, true);
+        //     return
+        // })
     }
 
 });
@@ -309,6 +314,14 @@ const setCurrentChat = (chat) => {
     
     receiverElem.innerText = `Message: ${participant}`;
 
+    // Get Online Status
+    
+    // if (timerInterval) clearInterval(timerInterval)
+    getOnlineUser(participant)
+    // timerInterval = setInterval(() => {
+    //     getOnlineUser(participant)
+    // }, 6000);
+
     fetchMessages(id)
 
 }
@@ -333,8 +346,8 @@ const fetchMessages = (id, timestamp = null) => {
 }
 
 
-const getOnlineUsers = () => {
-    WorkerIO.port.postMessage({ event: 'GETONLINEUSERS', data: tabId })
+const getOnlineUser = (participant) => {
+    WorkerIO.port.postMessage({ event: 'GETONLINEUSER', data: { tabId, participant } })
 }
 
 

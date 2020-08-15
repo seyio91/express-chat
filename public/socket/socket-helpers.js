@@ -70,7 +70,7 @@ export const getUserTab = (messages, user, status) => {
             <div class="media">
                 <div class="userbox">
                     <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
-                    <span class="p-status ${onlineStatus}"></span>
+                    <!-- <span class="p-status ${onlineStatus}"></span> -->
                 </div>
         
                 <div class="media-body ml-4">
@@ -98,10 +98,6 @@ export const setUsersOffline = () => {
     })
 }
 
-// Get Offline Messages
-// const getOfflineMessages = (convoList) => {
-
-// }
 
 
 // Toggle User Online/ Offline
@@ -127,15 +123,11 @@ export const toggleConnStatus = (status) => {
 
     let conClass = connector.getAttribute('class');
     if (status){
-        if (conClass.includes('offline-user')){
-            conClass = conClass.replace('offline-user', 'online-user');
-            userStatus.innerText = "Online"
-        }
+        conClass = conClass.includes('offline-user') ? conClass.replace('offline-user', 'online-user') : conClass
+        userStatus.innerText = "Online"
     } else {
-        if (conClass.includes('online-user')){
-            conClass = conClass.replace('online-user', 'offline-user');
-            userStatus.innerText = "Offline"
-        }
+        conClass = conClass.includes('online-user') ? conClass.replace('online-user', 'offline-user') : conClass
+        userStatus.innerText = "Offline"
     }
     connector.setAttribute('class', conClass);
 }
