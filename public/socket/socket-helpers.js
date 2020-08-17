@@ -86,17 +86,26 @@ export const getUserTab = (messages, user, status) => {
     return contactWrapper;
     }
 
-// Set all Users as offline if App is disconnected
-export const setUsersOffline = () => {
-    let allUserStatus = document.querySelectorAll('.p-status');
-    allUserStatus.forEach(userStatus => {
-        let userClass = userStatus.getAttribute('class')
-        if (userClass.includes('online-user')){
-            userClass = userClass.replace('online-user', 'offline-user')
-            userStatus.setAttribute('class', userClass)
-        }
-    })
+export const newUserTab = (userObj) => {
+    let contactWrapper = document.createElement('a');
+    contactWrapper.innerHTML = `
+            <div class="media">
+                <div class="userbox">
+                    <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
+                </div>
+        
+                <div class="media-body ml-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="mb-0">${userObj.email}</h6>
+                    </div>
+                </div>
+        </div>
+    `
+    contactWrapper.setAttribute('class', 'list-group-item list-group-item-action list-group-item-light rounded-0')
+    contactWrapper.setAttribute('id', `${userObj.email}`);
+    return contactWrapper;
 }
+
 
 
 
@@ -135,12 +144,18 @@ export const toggleConnStatus = (status) => {
 
 // ################################### HELPERS ##################################################
 
+const timeDiff = (timestamp, difftype) => {
+    let msgTime = moment(timestamp);
+    let currentMoment = moment()
+    let dayfrom = currentMoment.diff(msgTime, difftype)
+    return dayfrom
+}
+
 // Time Display Helper
 const timeDisplayHandler = (timestamp) => {
     let msgTime = moment(timestamp);
-    let currentMoment = moment()
     let time = msgTime.format('hh:mm A')
-    let dayfrom = currentMoment.diff(msgTime, 'day')
+    let dayfrom = timeDiff(timestamp, 'days')
     let day = ""
 
     switch (true) {
@@ -170,8 +185,6 @@ const convoHelper = (messages, user) => {
     let {message, sender, timestamp, read } = messages
     let { day, time } = timeDisplayHandler(timestamp)
     let displayTime = day == "" ? time : day;
-    // let displayMessage = sender != user ? `you: ${message}` : message
-    // if (!read) displayMessage = `<b>${displayMessage}</b>`
     if (sender != user) {
         displayMessage =  `you: ${message}`;
     } else {
@@ -185,27 +198,6 @@ const convoHelper = (messages, user) => {
 }
 
 
-export const newUserTab = (userObj) => {
-    let contactWrapper = document.createElement('a');
-    contactWrapper.innerHTML = `
-            <div class="media">
-                <div class="userbox">
-                    <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
-                </div>
-        
-                <div class="media-body ml-4">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="mb-0">${userObj.email}</h6>
-                    </div>
-                </div>
-        </div>
-    `
-    contactWrapper.setAttribute('class', 'list-group-item list-group-item-action list-group-item-light rounded-0')
-    contactWrapper.setAttribute('id', `${userObj.email}`);
-    return contactWrapper;
-}
-
-
 
 export const conversationMerge = (target, source) => {
     source.forEach(sourceElem => {
@@ -214,8 +206,6 @@ export const conversationMerge = (target, source) => {
             let targetElem = target[index]
             target.splice(index, 1);
             sourceElem = { ...targetElem, ...sourceElem}
-            console.log('source element')
-            console.log(sourceElem)
         }
 		target.unshift(sourceElem);
     })
@@ -235,5 +225,17 @@ export const singleConvo = (cid, participant, msg, read, sender, timestamp) => {
             sender,
             timestamp
         }
+    }
+}
+
+export const onlineStatus = (timestamp) => {
+	if (!timestamp) return '';
+	let timeInfo = timeDisplayHandler(timestamp)
+	let {day, time} = timeInfo
+	let dayfrom = timeDiff(timestamp, 'minutes')
+	if (dayfrom > 3){
+		return `lastSeen: ${day} ${time}`
+	} else {
+        return `Status: Online` 
     }
 }

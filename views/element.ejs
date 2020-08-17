@@ -251,9 +251,15 @@
     <!-- Chat Box-->
     <div class="col-7 px-0">
       <div class="bg-white">
-        <div class="bg-gray px-4 py-2 chatbox-header">
-          <p class="h5 mb-0 py-1" id="recipient">Message: </p>
-          <p id="user-status"></p>
+        <div class="bg-gray px-4 py-2 chatbox-header row">
+          <div class="userbox col-sm-2">
+            <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
+          </div>
+          <div class="col-sm">
+            <p class="h5 mb-0 py-1" id="recipient">Message: </p>
+            <p id="user-status" class="text-small"></p>
+          </div>
+
         </div>
         <div class="px-4 py-5 chat-box bg-light" id="chat"></div>
       </div>

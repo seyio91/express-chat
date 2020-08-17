@@ -6,9 +6,10 @@ const chatBox = document.getElementById('chat');
 const newchat = document.getElementById('newchat');
 const newchatlist = document.querySelector('.side-two');
 const returnchat = document.getElementById('returnchat');
-import { getUserTab, newReceivedMsg, newSentMsg, toggleUserStatus,
-        removePrevConvo, loadConversation, toggleConnStatus,
-        setUsersOffline, newUserTab,conversationMerge, singleConvo } from './socket-helpers.js'
+const user_status = document.getElementById('user-status');
+import { getUserTab, newReceivedMsg, newSentMsg, removePrevConvo, 
+        loadConversation, toggleConnStatus, newUserTab, conversationMerge,
+        singleConvo, onlineStatus } from './socket-helpers.js'
 
 
 let currentChat = null;
@@ -157,7 +158,6 @@ broadcastChannel.addEventListener('message', bEvent => {
     if (event == 'WSDISCONNECT'){
         timerId = setTimeout(() => {
             toggleConnStatus(false)
-            setUsersOffline()
             lastOffline = moment().format()
         }, 3000);
     }
@@ -173,21 +173,10 @@ broadcastChannel.addEventListener('message', bEvent => {
         }
         
         let convo = singleConvo(cid, sender, message, read, sender, timestamp)
-        console.log('convo before message')
-        console.log(conversationList)
         conversationList = conversationMerge(conversationList, [convo])
-        console.log('convo After message')
-        console.log(conversationList)
         displayConvolist();
         return
     }
-
-    // Online Users State Change
-    if (event == 'userStateChange'){
-        const {user, state} = data
-        toggleUserStatus(user, state)
-    }
-
 
     // NEWMESSAGE
     if (event == 'NEWMESSAGE'){
@@ -201,7 +190,6 @@ broadcastChannel.addEventListener('message', bEvent => {
                 chatBox.appendChild(newmessage)
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
-            console.log(conversationList)
         } else {
             // Error to show Unable to send
             console.log(`nothing`)
@@ -237,19 +225,8 @@ WorkerIO.port.addEventListener('message', function(eventM){
     }
 
     if (event == 'GETONLINEUSER'){
-        if (!data) {
-            // do something with false
-            document.getElementById('user-status').innerText = 'Status: Offline'
-        } else {
-            // do something with true
-            document.getElementById('user-status').innerText = 'Status: Online'
-        }
-        // data.forEach(onlineuser => {
-        //     toggleUserStatus(onlineuser, true);
-        //     return
-        // })
+        user_status.innerText = onlineStatus(data)
     }
-
 });
 
 
@@ -313,6 +290,7 @@ const setCurrentChat = (chat) => {
     
     
     receiverElem.innerText = `Message: ${participant}`;
+    user_status.innerText = "";
 
     // Get Online Status
     
