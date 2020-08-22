@@ -7,6 +7,7 @@ const newchat = document.getElementById('newchat');
 const newchatlist = document.querySelector('.side-two');
 const returnchat = document.getElementById('returnchat');
 const user_status = document.getElementById('user-status');
+const chatsearch = document.getElementById('chatsearch')
 import { getUserTab, newReceivedMsg, newSentMsg, removePrevConvo, 
         loadConversation, toggleConnStatus, newUserTab, conversationMerge,
         singleConvo, onlineStatus } from './socket-helpers.js'
@@ -17,6 +18,7 @@ let mainUser = null;
 let timerId = null;
 let lastOffline = null;
 let conversationList = [];
+let conversationDisplay = [];
 const tabId = uuid.v4();
 let timerInterval = null
 
@@ -34,6 +36,12 @@ const createConversationList = (conversation) => {
         }
     })
 }
+
+chatsearch.addEventListener('keyup', (e)=> {
+    if (e.target.value != ""){
+        console.log(e.target.value)
+    }
+})
 
 // return
 newchat.addEventListener('click', (event)=>{
@@ -76,7 +84,7 @@ let newChatEvent = (userid) => {
     return ()=>{
         let userChat
         // search through conversationList- participant
-        let index = conversationList.findIndex(conversation => conversation.uid1 == userid.email || conversation.uid2 == userid.email)
+        let index = conversationList.findIndex(conversation => conversation.participant == userid.email || conversation.uid2 == userid.email)
         if (index != -1){
             userChat = conversationList[index]
             let chatItem = {id: userChat.id, participant: userid.email, lastMessage: userChat.lastMessage, newchat: false}
