@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
     if (e.request.method !== 'GET') return;
     const req = e.request;
     var url = new URL(e.request.url);
-    if (!url.pathname.includes('currentchat')) return
+    if (!url.pathname.includes('currentchat') || !url.pathname.includes('userlist')) return
     
     // let urlparts = url.pathname.split('/')
     // let chatid = urlparts[2]

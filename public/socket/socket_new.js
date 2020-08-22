@@ -8,6 +8,7 @@ const newchatlist = document.querySelector('.side-two');
 const returnchat = document.getElementById('returnchat');
 const user_status = document.getElementById('user-status');
 const chatsearch = document.getElementById('chatsearch')
+const newsearch = document.getElementById('newsearch')
 import { getUserTab, newReceivedMsg, newSentMsg, removePrevConvo, 
         loadConversation, toggleConnStatus, newUserTab, conversationMerge,
         singleConvo, onlineStatus, debounce } from './socket-helpers.js'
@@ -21,6 +22,8 @@ let conversationList = [];
 let conversationDisplay = [];
 const tabId = uuid.v4();
 let timerInterval = null
+let friendList = [];
+let friendListFilter = [];
 
 
 const createConversationList = (conversation) => {
@@ -47,6 +50,16 @@ const sendSearch = (name) => {
     searchDisplay()
 }
 
+newsearch.addEventListener('keyup', debounce((e)=> {
+    let value = e.target.value.trim()
+    value != ""? sendFriendSearch(value) : renderAllUsers(friendList)
+    }, 1000))
+
+const sendFriendSearch = (name) => {
+    friendListFilter = friendList.filter(convo => convo.email.includes(name))
+    renderAllUsers(friendListFilter)
+}
+
 // return
 newchat.addEventListener('click', (event)=>{
     newchatlist.style.left = '0';
@@ -57,18 +70,32 @@ newchat.addEventListener('click', (event)=>{
                 // handle empty list here
                 // if list lenght = 1
                 // display no available users
-                // console.log(allUsers)
-                allUsers.forEach(user => {
+                friendList = allUsers;
+                renderAllUsers(allUsers)
+                // allUsers.forEach(user => {
                     // check if user is not current user
-                    if (user.email != mainUser){
-                        // render chat page
-                        let contactWrapper = newUserTab(user)
-                        contactWrapper.addEventListener('click',(newChatEvent)(user))
-                        alluserElem.appendChild(contactWrapper)
-                    }
-                })
+                    // if (user.email != mainUser){
+                    //     // render chat page
+                    //     let contactWrapper = newUserTab(user)
+                    //     contactWrapper.addEventListener('click',(newChatEvent)(user))
+                    //     alluserElem.appendChild(contactWrapper)
+                    // }
+                // })
             })
 })
+
+const renderAllUsers = users => {
+    alluserElem.innerHTML = "";
+    users.forEach(user => {
+        // check if user is not current user
+        if (user.email != mainUser){
+            // render chat page
+            let contactWrapper = newUserTab(user)
+            contactWrapper.addEventListener('click',(newChatEvent)(user))
+            alluserElem.appendChild(contactWrapper)
+        }
+    })
+}
 
 // return chat list
 returnchat.addEventListener('click', ()=>{
@@ -113,6 +140,7 @@ const searchDisplay = (firstload = false) => {
 
 const displayConvolist = (firstload = false) => {
     usersElem.innerHTML = "";
+    chatsearch.value = "";
     let indexChat = null
     conversationList.forEach((user, index) => {
         let { participant, status, lastMessage } = user;
