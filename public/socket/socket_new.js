@@ -10,7 +10,7 @@ const user_status = document.getElementById('user-status');
 const chatsearch = document.getElementById('chatsearch')
 import { getUserTab, newReceivedMsg, newSentMsg, removePrevConvo, 
         loadConversation, toggleConnStatus, newUserTab, conversationMerge,
-        singleConvo, onlineStatus } from './socket-helpers.js'
+        singleConvo, onlineStatus, debounce } from './socket-helpers.js'
 
 
 let currentChat = null;
@@ -37,11 +37,15 @@ const createConversationList = (conversation) => {
     })
 }
 
-chatsearch.addEventListener('keyup', (e)=> {
-    if (e.target.value != ""){
-        console.log(e.target.value)
-    }
-})
+chatsearch.addEventListener('keyup', debounce((e)=> {
+    let value = e.target.value.trim()
+    value != ""? sendSearch(value) : displayConvolist()
+    }, 1000))
+
+const sendSearch = (name) => {
+    conversationDisplay = conversationList.filter(convo => convo.participant.includes(name))
+    searchDisplay()
+}
 
 // return
 newchat.addEventListener('click', (event)=>{
@@ -96,7 +100,15 @@ let newChatEvent = (userid) => {
     }
 }
 
-
+const searchDisplay = (firstload = false) => {
+    usersElem.innerHTML = "";
+    conversationDisplay.forEach(user => {
+        let { participant, status, lastMessage } = user;
+        let contactWrapper = getUserTab(lastMessage, participant, status)
+        contactWrapper.addEventListener('click',(chatEvent)(user))
+        usersElem.appendChild(contactWrapper)
+    })
+}
 
 
 const displayConvolist = (firstload = false) => {
@@ -246,7 +258,6 @@ WorkerIO.port.addEventListener('error', function(e){
 
 let chatEvent = (chat) => {
     return ()=>{
-        console.log(chat)
         if (currentChat.id != chat.id){
             setCurrentChat(chat);
         }
@@ -273,15 +284,19 @@ const newCurrentChat = (chat) => {
 const setCurrentChat = (chat) => {
 
     // remove previous user highlight
-    if(currentChat && !currentChat.newchat){
-        removePrevConvo(currentChat);
-    }
+    try {
+        if(currentChat && !currentChat.newchat){
+            removePrevConvo(currentChat);
+        }
+    } catch (error) {}
+
 
     currentChat = chat;
     // console.log(currentChat)
 
     // inform sharedworker
     WorkerIO.port.postMessage({event: 'SETCURRENTUSER', data: {cid: currentChat.id, tab: tabId } })
+
 
     //set new chat as selected
     loadConversation(currentChat)
