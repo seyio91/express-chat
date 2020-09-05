@@ -72,15 +72,6 @@ newchat.addEventListener('click', (event)=>{
                 // display no available users
                 friendList = allUsers;
                 renderAllUsers(allUsers)
-                // allUsers.forEach(user => {
-                    // check if user is not current user
-                    // if (user.email != mainUser){
-                    //     // render chat page
-                    //     let contactWrapper = newUserTab(user)
-                    //     contactWrapper.addEventListener('click',(newChatEvent)(user))
-                    //     alluserElem.appendChild(contactWrapper)
-                    // }
-                // })
             })
 })
 
