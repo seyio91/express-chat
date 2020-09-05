@@ -52,30 +52,43 @@ socketconn.init = (server)=>{
         // })
     
         // everyone connecting should see all active users. all sockets
-        socket.on('new session', (callback)=>{
+        socket.on('NEWSESSION', (callback)=>{
             callback(userID)
         })
     
         // console.log(activeUsers)
     
         socket.on('new Message', (data, callback) => {
-            callback(true)
-            const { cid, msg, recipient } = data
+            
+            const { cid, msg, recipient, newchat } = data
 
             newmessage = createMessage(data, userID)
+            console.log('data before update')
             conversation = updateConversation(data, userID)
 
-            console.log('storing new message', newmessage)
+            // console.log('storing new message', newmessage)
 
             // send to save messsage
             // postData('http://localhost:3000/messages', newmessage)
             //     .then(()=> {
-            //         console.log("success creating new message")
-            //         updateData('http://localhost:3000/conversations', cid , conversation)
-            //             .then(()=> console.log('Success Creating Conversation'))
-            //     })
+            //         if (newchat){
+            //             // updating
+            //             postData('http://localhost:3000/conversations', conversation)
+            //                 .then(()=> {
+            //                     callback(true)
+            //                 })
+            //                 .catch(err => console.log(err))
+            //         } else {
+                        // updateData('http://localhost:3000/conversations', cid , conversation)
+                        // .then(()=> {
+                            // console.log('Success Updating Conversation');
+                            // callback(true)
+                        // })
+                //     }
+                // })
     
-    
+            // only true after saving the message
+            callback(true)
 
             // console.log('receipient available: ', sendSockets)
             sendSockets = getUserSession(recipient, activeUsers)
@@ -87,10 +100,15 @@ socketconn.init = (server)=>{
     
         })
 
-
         //get online users
-        socket.on('getonlineUsers', (callback)=> {
+        socket.on('GETONLINEUSERS', (callback)=> {
+            console.log('online users called')
             callback(getOnlineUsers(userID, activeUsers))
+            
+        })
+
+        socket.on('MESSAGEREAD', (data, callback)=>{
+            console.log('Update Message as read')
         })
     
         // disconnect
@@ -171,13 +189,13 @@ function getTime(){
 // Helper to create message
 function createMessage(data, userid){
     const { cid, msg, timestamp } = data
-    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp }
+    return { id: uuid.v4(), message: msg, sender: userid, cid: cid, timestamp, read: false }
 }
 
 // create conversation
 function updateConversation(data, userid){
-    const { msg, recipient, timestamp } = data;
-    return { uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp } }
+    const { msg, recipient, timestamp, cid } = data;
+    return {id: cid, uid1: userid, uid2: recipient, lastMessage: { message: msg, sender: userid, timestamp, read: false } }
 }
 
 module.exports = { sessionData, socketconn }

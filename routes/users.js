@@ -22,9 +22,28 @@ router.get('/chat', userAuth, async(req, res) => {
     // res.render('chat', { user: req.user.email })
     res.render('element')
 })
+
+// get all user
+router.get('/userlist', userAuth, async(req, res) => {
+    const userlist = await getData(`${keys.DBCONN}/users`)
+    const results = userlist.map(a => {
+        let userObj = {};
+        userObj['name'] = `${a.first_name} ${a.last_name}`;
+        userObj['email'] = a.email;
+        return userObj;
+    })
+    
+    res.json(results)
+})
+
 // router.get('/currentchat/:cid', async(req, res)=>{
 router.get('/currentchat/:cid',userAuth, async(req, res)=>{
     const convo = await getData(`${keys.DBCONN}/messages?cid=${req.params.cid}`)
+    res.json(convo)
+})
+
+router.get('/currentchat/:cid/:tid',userAuth, async(req, res)=>{
+    const convo = await getData(`${keys.DBCONN}/messages?cid=${req.params.cid}&timestamp_gte=${req.params.tid}`)
     res.json(convo)
 })
 

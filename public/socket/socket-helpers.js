@@ -20,32 +20,6 @@ export const loadConversation = (userChat) => {
 }
 
 
-// If conversation thread is not opened
-// conversation is highlighted when a new message is received
-// This clears highlight when you click on the conversation
-export const clearUnreadMessage = (user) => {
-    let userdiv = document.getElementById(user);
-    userdiv.className = userdiv.className.replace(' font-weight-bold' ,'');
-}
-
-
-// Notify User for Unread Message
-export const notifyUnreadMsg = (user) => {
-    const userElem = document.getElementById(user);
-    if (userElem){
-        userElem.className += ' font-weight-bold';
-    }
-}
-
-//update User Chat
-export const updateConvoList = (data, user) => {
-    let { displayMessage, displayTime } = convoHelper(data, user)
-    let lastMessage = document.getElementById(user).querySelectorAll('p')[0];
-    let msgDate = document.getElementById(user).querySelectorAll('small')[0];
-    lastMessage.innerText = displayMessage
-    msgDate.innerText =   displayTime
-}
-
 // Creates a Received Message
 export const newReceivedMsg = (messages) => {
     const { message, timestamp } = messages;
@@ -131,16 +105,16 @@ export const setUsersOffline = () => {
 
 // Toggle User Online/ Offline
 export const toggleUserStatus = (user, status) => {
+    // console.log(document.getElementById(user))
     let userElem = document.getElementById(user).querySelectorAll('span')[0];
     if (userElem) {
         let currClass = userElem.getAttribute('class');
         if (status){
-            currClass = currClass.replace(' offline-user', '')
-            userElem.setAttribute('class', `${currClass} online-user`)
+            currClass = currClass.includes('offline-user') ? currClass.replace('offline-user', 'online-user') : currClass
         } else {
-            currClass = currClass.replace(' online-user', '')
-            userElem.setAttribute('class', `${currClass} offline-user`)
+            currClass = currClass.includes('online-user') ? currClass.replace('online-user', 'offline-user'): currClass
         }
+        userElem.setAttribute('class', currClass)
 
     }
 }
@@ -152,17 +126,19 @@ export const toggleConnStatus = (status) => {
 
     let conClass = connector.getAttribute('class');
     if (status){
-        conClass = conClass.replace(' offline-user', '');
-        connector.setAttribute('class', `${conClass} online-user`);
-        userStatus.innerText = "Online"
+        if (conClass.includes('offline-user')){
+            conClass = conClass.replace('offline-user', 'online-user');
+            userStatus.innerText = "Online"
+        }
+        return
     } else {
-        conClass = conClass.replace(' online-user', '');
-        connector.setAttribute('class', `${conClass} offline-user`);
-        userStatus.innerText = "Offline"
+        if (conClass.includes('online-user')){
+            conClass = conClass.replace('online-user', 'offline-user');
+            userStatus.innerText = "Offline"
+        }
     }
+    connector.setAttribute('class', conClass);
 }
-
-//toggletimedisplay
 
 
 // ################################### HELPERS ##################################################
@@ -198,9 +174,67 @@ const timeDisplayHandler = (timestamp) => {
 
 // Helper Conversation Details
 const convoHelper = (messages, user) => {
-    let {message, sender, timestamp} = messages
+    let displayMessage= '';
+    let {message, sender, timestamp, read } = messages
     let { day, time } = timeDisplayHandler(timestamp)
     let displayTime = day == "" ? time : day;
-    let displayMessage = sender != user ? `you: ${message}` : message
+    // let displayMessage = sender != user ? `you: ${message}` : message
+    // if (!read) displayMessage = `<b>${displayMessage}</b>`
+    if (sender != user) {
+        displayMessage =  `you: ${message}`;
+    } else {
+        if (read){
+            displayMessage = message;
+        } else {
+            displayMessage = `<b>${message}</b>`
+        }
+    }
     return { displayMessage, displayTime }
+}
+
+
+export const newUserTab = (userObj) => {
+    let contactWrapper = document.createElement('a');
+    contactWrapper.innerHTML = `
+            <div class="media">
+                <div class="userbox">
+                    <img src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user" width="50" class="rounded-circle">
+                </div>
+        
+                <div class="media-body ml-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="mb-0">${userObj.email}</h6>
+                    </div>
+                </div>
+        </div>
+    `
+    contactWrapper.setAttribute('class', 'list-group-item list-group-item-action list-group-item-light rounded-0')
+    contactWrapper.setAttribute('id', `${userObj.email}`);
+    return contactWrapper;
+}
+
+
+
+export const conversationMerge = (target, source) => {
+    source.forEach(sourceElem => {
+		let index = target.findIndex(convo => convo.id == sourceElem.id)
+		if (index != -1) target.splice(index, 1);
+		target.unshift(sourceElem);
+    })
+    return target;
+}
+
+
+export const singleConvo = (cid, uid1, msg, read, sender, timestamp) => {
+    return {
+        id: cid,
+        uid1,
+        uid2: sender,
+        lastMessage: {
+            message: msg,
+            read,
+            sender,
+            timestamp
+        }
+    }
 }

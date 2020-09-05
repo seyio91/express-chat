@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  chatapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    environment:
+      - DB_HOST=http://json-service
+      - DB_PORT=3000
+    depends_on: 
+      - json-service
+    networks:
+      - chat-network
+
+  json-service:
+    build:
+      context: ./json-server
+      dockerfile: Dockerfile
+    networks:
+      - chat-network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    networks:
+      - chat-network
+    ports:
+      - "80:80"
+    depends_on:
+      - chatapp
+
+networks:
+  chat-network:

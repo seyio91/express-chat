@@ -14,171 +14,237 @@
   <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <style id="compiled-css" type="text/css">
-      /*
-*
-* ==========================================
-* FOR DEMO PURPOSES
-* ==========================================
-*
-*/
-body {
-  background-color: rgb(255, 255, 255);
-  background-image: linear-gradient(90deg, rgb(255, 255, 255) 0%, #9FACE6 100%);
+          /*
+    *
+    * ==========================================
+    * FOR DEMO PURPOSES
+    * ==========================================
+    *
+    */
+    body {
+      background-color: rgb(255, 255, 255);
+      background-image: linear-gradient(90deg, rgb(255, 255, 255) 0%, #9FACE6 100%);
 
-  min-height: 100vh;
-}
+      min-height: 100vh;
+    }
 
-::-webkit-scrollbar {
-  width: 5px;
-}
-
-::-webkit-scrollbar-track {
-  width: 5px;
-  background: #f5f5f5;
-}
-
-::-webkit-scrollbar-thumb {
-  width: 1em;
-  background-color: #ddd;
-  outline: 1px solid slategrey;
-  border-radius: 1rem;
-}
-
-.text-small {
-  font-size: 0.9rem;
-}
-
-.messages-box,
-.chat-box {
-  height: 510px;
-  overflow-y: scroll;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-
-input::placeholder {
-  font-size: 0.9rem;
-  color: #999;
-}
-
-.chatbox-header {
-  background-color: #eee;
-}
-
-div.senderChat {
-  content: '';
-  position: relative;
-  width: 0;
-  height: 0;
-  top: 0.5em;
-  border: 10px solid;
-  border-top-color: transparent;
-  border-left-color: transparent;
-  border-right-color: #ffffff !important;
-  border-bottom-color: transparent;
-}
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
 
 
-div.receiverChat {
-  content: '';
-  position: relative;
-  width: 0;
-  height: 0;
-  top: 0.5em;
-  /* left: 22px; */
-  /* right: 0.6em; */
-  border: 10px solid;
-  border-top-color: transparent;
-  border-left-color: #007bff !important;
-  border-right-color: transparent;
-  border-bottom-color: transparent;
-}
+    /* .app {
+      position: relative;
+      overflow: hidden;
+      top: 19px; */
+      /* height: calc(100% - 230px); */
+      /* height: 100%;
+      margin: auto;
+      padding: 0;
+    } */
 
-.conversation {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-}
+    /* .app-one {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    } */
 
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
 
+    ::-webkit-scrollbar-track {
+      width: 5px;
+      background: #f5f5f5;
+    }
 
-.online-status {
-  display: flex;
-  flex-direction: row;
-  color: rgb(1, 46, 37);
-  font-weight: bold;
-  margin-left: 10px;
-  padding-top: 8px;
-}
-.chatwrapper {
-  width: 100%;
-  word-break: break-word;
-}
+    ::-webkit-scrollbar-thumb {
+      width: 1em;
+      background-color: #ddd;
+      outline: 1px solid slategrey;
+      border-radius: 1rem;
+    }
 
-.user-status {
-  height: 15px;
-  width: 15px;
-  /* background-color: rgb(2, 190, 127); */
-  border-radius: 50%;
-  margin: 5px;
-  padding: 0;
-  /* display: block; */
-}
+    .text-small {
+      font-size: 0.9rem;
+    }
 
-.online-user {
-  background-color: rgb(2, 190, 127);
-}
+    .messages-box,
+    .chat-box {
+      height: 510px;
+      overflow-y: scroll;
+    }
 
-.offline-user {
-  background-color: rgb(190, 2, 2);
-}
+    .rounded-lg {
+      border-radius: 0.5rem;
+    }
 
-.userbox {
-  display: inline-block;
-  position: relative;
-}
+    input::placeholder {
+      font-size: 0.9rem;
+      color: #999;
+    }
 
-.p-status {
-  width: 10px;
-  height: 10px;
-  -webkit-border-radius: 100px;
-  -moz-border-radius: 100px;
-  border-radius: 100px;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
+    .chatbox-header {
+      background-color: #eee;
+    }
 
-a.hover{
-  background-color: #eee;
-}
-
-.dark-bg {
-  background-color: rgb(219, 217, 217);
-}
+    div.senderChat {
+      content: '';
+      position: relative;
+      width: 0;
+      height: 0;
+      top: 0.5em;
+      border: 10px solid;
+      border-top-color: transparent;
+      border-left-color: transparent;
+      border-right-color: #ffffff !important;
+      border-bottom-color: transparent;
+    }
 
 
+    div.receiverChat {
+      content: '';
+      position: relative;
+      width: 0;
+      height: 0;
+      top: 0.5em;
+      /* left: 22px; */
+      /* right: 0.6em; */
+      border: 10px solid;
+      border-top-color: transparent;
+      border-left-color: #007bff !important;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+    }
+
+    .conversation {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+    }
+
+
+
+    .online-status {
+      display: flex;
+      flex-direction: row;
+      color: rgb(1, 46, 37);
+      font-weight: bold;
+      margin-left: 10px;
+      padding-top: 8px;
+    }
+    .chatwrapper {
+      width: 100%;
+      word-break: break-word;
+    }
+
+    .user-status {
+      height: 15px;
+      width: 15px;
+      /* background-color: rgb(2, 190, 127); */
+      border-radius: 50%;
+      margin: 5px;
+      padding: 0;
+      /* display: block; */
+    }
+
+    .online-user {
+      background-color: rgb(2, 190, 127);
+    }
+
+    .offline-user {
+      background-color: rgb(190, 2, 2);
+    }
+
+    .userbox {
+      display: inline-block;
+      position: relative;
+    }
+
+    .p-status {
+      width: 10px;
+      height: 10px;
+      -webkit-border-radius: 100px;
+      -moz-border-radius: 100px;
+      border-radius: 100px;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+
+    a.hover{
+      background-color: #eee;
+    }
+
+    .dark-bg {
+      background-color: rgb(219, 217, 217);
+    }
+
+    .side-two {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      z-index: 2;
+      position: relative;
+      top: -100%;
+      left: -100%;
+      -webkit-transition: left 0.3s ease;
+      transition: left 0.3s ease;
+
+    }
+
+    .side-one {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      z-index: 1;
+      position: relative;
+      display: block;
+      top: 0;
+    }
   </style>
 
 </head>
 <body>
-    <div class="container py-5 px-4">
-  <div class="row rounded-lg overflow-hidden shadow">
+  <div class="container py-2 px-4 app">
+  <div class="row rounded-lg overflow-hidden shadow app-one">
     <!-- Users box-->
     <div class="col-5 px-0">
-      <div class="bg-white">
+      <div class="side-one">
+        <div class="bg-white">
 
-        <div class="bg-gray px-4 py-2 chatbox-header">
-          <p class="h5 mb-0 py-1">Recent</p>
+          <div class="bg-gray px-4 py-2 chatbox-header" id="newchat">
+            <p class="h5 mb-0 py-1">Recent</p>
+          </div>
+
+          <div class="messages-box">
+            <div class="list-group rounded-0" id="users"></div>
+          </div>
         </div>
+        <div class="online-status" id="online-status"><span class="user-status offline-user"></span><p>Offline</p></div>
+      </div>
+      <div class="side-two" style="left: -100%;">
+        <div class="bg-white">
 
-        <div class="messages-box">
-          <div class="list-group rounded-0" id="users"></div>
+          <div class="bg-gray px-4 py-2 chatbox-header" id="returnchat">
+            <p class="h5 mb-0 py-1">Click Me</p>
+          </div>
+
+          <div class="messages-box">
+            <div class="list-group rounded-0" id="allusers"></div>
+          </div>
         </div>
       </div>
-      <div class="online-status" id="online-status"><span class="user-status offline-user"></span><p>Offline</p></div>
+      
     </div>
     <!-- Chat Box-->
     <div class="col-7 px-0">
@@ -202,10 +268,10 @@ a.hover{
     </div>
   </div>
 </div>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/node-uuid/1.4.8/uuid.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script src="js/chat.js"></script>
-<!-- <script type="module" src="socket/socket_new.js"></script> -->
 <script type="module" src="socket/socket_new.js"></script>
   <script>
     // tell the embed parent frame the height of the content
