@@ -21,7 +21,7 @@
     "express-session": "^1.17.0",
     "express-validator": "6.4.0",
     "https": "^1.0.0",
-    "moment": "^2.27.0",
+    "moment": "^2.29.2",
     "node-fetch": "^2.6.0",
     "parse-link-header": "^1.0.1",
     "passport": "^0.4.1",
